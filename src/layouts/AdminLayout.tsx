@@ -11,7 +11,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <AppSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
-        <main className="flex-1 p-6 animate-fade-in">
+        <main className="flex-1 p-5 lg:p-6 animate-fade-in">
           {children}
         </main>
       </div>
