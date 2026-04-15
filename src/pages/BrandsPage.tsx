@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, MoreHorizontal, Upload } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useStore } from '@/store/useStore';
 import { brandService } from '@/services/api';
-import { FormModal, ConfirmDialog, TableSkeleton, EmptyState } from '@/components/shared';
+import { FormModal, ConfirmDialog, TableSkeleton, EmptyState, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
@@ -49,54 +50,67 @@ export default function BrandsPage() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('brands.title')}</h1>
-        <Button onClick={openAdd} className="gap-2"><Plus className="h-4 w-4" />{t('brands.addBrand')}</Button>
-      </div>
+      <PageHeader
+        title={t('brands.title')}
+        actions={
+          <Button onClick={openAdd} size="sm" className="gap-1.5 h-8">
+            <Plus className="h-3.5 w-3.5" />{t('brands.addBrand')}
+          </Button>
+        }
+      />
 
-      <div className="bg-card border rounded-lg overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="text-start p-3 font-medium">{t('brands.logo')}</th>
-              <th className="text-start p-3 font-medium">{t('brands.name')}</th>
-              <th className="text-start p-3 font-medium">{t('brands.productCount')}</th>
-              <th className="text-start p-3 font-medium">{t('brands.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? <TableSkeleton cols={4} /> : brands.length === 0 ? (
-              <tr><td colSpan={4}><EmptyState message={t('common.noResults')} /></td></tr>
-            ) : brands.map((b) => (
-              <tr key={b.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                <td className="p-3"><img src={b.logo} alt={b.name} className="h-10 w-10 rounded object-cover" /></td>
-                <td className="p-3 font-medium">{b.name}</td>
-                <td className="p-3">{b.productCount}</td>
-                <td className="p-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => openEdit(b)}><Pencil className="h-4 w-4 ltr:mr-2 rtl:ml-2" />{t('common.edit')}</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDeleteId(b.id)} className="text-destructive"><Trash2 className="h-4 w-4 ltr:mr-2 rtl:ml-2" />{t('common.delete')}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
+      <div className="bg-card border rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/40">
+                <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.logo')}</th>
+                <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.name')}</th>
+                <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.productCount')}</th>
+                <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.actions')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading ? <TableSkeleton cols={4} /> : brands.length === 0 ? (
+                <tr><td colSpan={4}><EmptyState message={t('common.noResults')} /></td></tr>
+              ) : brands.map((b) => (
+                <tr key={b.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-3">
+                    <img src={b.logo} alt={b.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border" />
+                  </td>
+                  <td className="px-4 py-3.5 font-medium">{b.name}</td>
+                  <td className="px-4 py-3.5 text-muted-foreground">{b.productCount}</td>
+                  <td className="px-4 py-3.5 text-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-36">
+                        <DropdownMenuItem onClick={() => openEdit(b)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.edit')}</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setDeleteId(b.id)} className="text-destructive focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.delete')}</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <FormModal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('brands.editBrand') : t('brands.addBrand')} onSubmit={handleSubmit}>
-        <div className="space-y-3">
-          <div><Label>{t('brands.name')}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div>
-            <Label>{t('brands.uploadLogo')}</Label>
-            <div className="border-2 border-dashed rounded-lg p-6 text-center text-muted-foreground cursor-pointer hover:border-primary transition-colors">
-              <Upload className="h-8 w-8 mx-auto mb-2" />
-              <p className="text-sm">{t('brands.uploadLogo')}</p>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t('brands.name')}</Label>
+            <Input className="h-9" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t('brands.uploadLogo')}</Label>
+            <div className="border-2 border-dashed rounded-xl p-8 text-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:bg-primary/[0.02] transition-all duration-200">
+              <Upload className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              <p className="text-xs font-medium">{t('brands.uploadLogo')}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 2MB</p>
             </div>
           </div>
         </div>
