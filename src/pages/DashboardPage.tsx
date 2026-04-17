@@ -3,23 +3,61 @@ import { useEffect, useState } from 'react';
 import { Package, FolderTree, Tag, EyeOff, Activity, TrendingUp } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { StatCard, PageHeader } from '@/components/shared';
-import { dashboardService, activityService } from '@/services/api';
-import { monthlyData, categoryDistribution, type ActivityLog } from '@/data/mock';
+import { monthlyData, categoryDistribution } from '@/data/mock';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 
+interface ActivityLog {
+  id: string;
+  action: string;
+  target: string;
+  timestamp: string;
+}
+
 export default function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState({ totalProducts: 0, totalCategories: 0, totalBrands: 0, hiddenProducts: 0 });
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([dashboardService.getStats(), activityService.getRecent()]).then(([s, a]) => {
-      setStats(s);
-      setActivities(a);
-      setLoading(false);
-    });
+    const fetchDashboardStats = async () => {
+      try {
+        const token = localStorage.getItem("admin_token");
+        const response = await fetch("http://127.0.0.1:8000/api/admin/dashboard-stats", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json"
+          }
+        });
+        const json = await response.json();
+        
+        if (json.status) {
+          const d = json.data;
+          setStats({
+            totalProducts: d.products_count || 0,
+            totalCategories: d.categories_count || 0,
+            totalBrands: d.brands_count || 0,
+            hiddenProducts: (d.products_count || 0) - (d.active_products || 0)
+          });
+
+          const currentLang = i18n.language || 'ar'; // معرفة اللغة الحالية للوحة
+          const recentActs = (d.recent_products || []).map((p: any) => ({
+            id: p.id.toString(),
+            action: t('products.addProduct'), // نص الإجراء "إضافة منتج"
+            target: p.name?.[currentLang] || p.name?.ar || p.name?.en || 'منتج جديد', // جلب الاسم باللغة المناسبة
+            timestamp: p.created_at
+          }));
+          setActivities(recentActs);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
   }, []);
 
   return (

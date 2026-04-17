@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense } from "react";
@@ -13,8 +13,18 @@ const BrandsPage = lazy(() => import("./pages/BrandsPage"));
 const MediaPage = lazy(() => import("./pages/MediaPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazy(() => import("./pages/Login"));
 
 const queryClient = new QueryClient();
+
+// مكون المسار المحمي (Protected Route)
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const isAuthenticated = localStorage.getItem("admin_token");
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 const Loading = () => (
   <div className="flex min-h-screen items-center justify-center">
@@ -29,13 +39,14 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={<Loading />}>
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/brands" element={<BrandsPage />} />
-            <Route path="/media" element={<MediaPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} />
+            <Route path="/products/:id" element={<ProtectedRoute><ProductDetailPage /></ProtectedRoute>} />
+            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
+            <Route path="/brands" element={<ProtectedRoute><BrandsPage /></ProtectedRoute>} />
+            <Route path="/media" element={<ProtectedRoute><MediaPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

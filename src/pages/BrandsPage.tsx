@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, MoreHorizontal, Upload } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useStore } from '@/store/useStore';
-import { brandService } from '@/services/api';
 import { FormModal, ConfirmDialog, TableSkeleton, EmptyState, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,33 +18,105 @@ import { toast } from 'sonner';
 
 export default function BrandsPage() {
   const { t } = useTranslation();
-  const { brands, setBrands, addBrand, updateBrand, removeBrand } = useStore();
+  const { brands, setBrands } = useStore();
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', logo: '' });
+  const [form, setForm] = useState<{ name: string, logo: File | null }>({ name: '', logo: null });
 
-  useEffect(() => {
-    brandService.getAll().then((data) => { setBrands(data); setLoading(false); });
-  }, []);
-
-  const openAdd = () => { setEditing(null); setForm({ name: '', logo: '' }); setModalOpen(true); };
-  const openEdit = (b: any) => { setEditing(b); setForm({ name: b.name, logo: b.logo }); setModalOpen(true); };
-
-  const handleSubmit = () => {
-    if (editing) {
-      updateBrand(editing.id, form);
-      toast.success(t('brands.brandUpdated'));
-    } else {
-      addBrand({ id: String(Date.now()), ...form, productCount: 0 });
-      toast.success(t('brands.brandAdded'));
+  const fetchBrands = async () => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch("http://127.0.0.1:8000/api/brands", {
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+      });
+      const json = await res.json();
+      if (json.status && json.data) {
+        setBrands(json.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setModalOpen(false);
   };
 
-  const handleDelete = () => {
-    if (deleteId) { removeBrand(deleteId); toast.success(t('brands.brandDeleted')); setDeleteId(null); }
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
+  const openAdd = () => { 
+    setEditing(null); 
+    setForm({ name: '', logo: null }); 
+    setModalOpen(true); 
+  };
+  
+  const openEdit = (b: any) => { 
+    setEditing(b); 
+    setForm({ name: b.name || '', logo: null }); // لا نحتاج لتعيين الصورة القديمة في الفورم، سنرسل الصورة الجديدة فقط إذا تم تعديلها
+    setModalOpen(true); 
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("admin_token");
+      const formData = new FormData();
+      formData.append("name", form.name);
+      if (form.logo) {
+        formData.append("logo", form.logo);
+      }
+
+      // إضافة _method في حال التعديل ليتعامل Laravel مع التحديث
+      if (editing) formData.append("_method", "PUT");
+
+      const url = editing 
+        ? `http://127.0.0.1:8000/api/brands/${editing.id}` 
+        : "http://127.0.0.1:8000/api/brands";
+
+      const res = await fetch(url, {
+        method: "POST", // دائما POST بسبب FormData
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" },
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.status || res.ok) {
+        toast.success(editing ? t('brands.brandUpdated') : t('brands.brandAdded'));
+        setModalOpen(false);
+        fetchBrands();
+      } else {
+        toast.error(data.message || 'حدث خطأ في العملية');
+      }
+    } catch (err) {
+      toast.error('حدث خطأ في الاتصال بالخادم');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (deleteId) {
+      try {
+        const token = localStorage.getItem("admin_token");
+        const res = await fetch(`http://127.0.0.1:8000/api/brands/${deleteId}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+        });
+        if (res.ok) {
+          toast.success(t('brands.brandDeleted'));
+          fetchBrands();
+        } else {
+          toast.error('فشل حذف العلامة التجارية');
+        }
+      } catch (err) {
+        toast.error('حدث خطأ في الاتصال بالخادم');
+      } finally {
+        setDeleteId(null);
+      }
+    }
   };
 
   return (
@@ -76,10 +147,14 @@ export default function BrandsPage() {
               ) : brands.map((b) => (
                 <tr key={b.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
-                    <img src={b.logo} alt={b.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border" />
+                    {b.logo ? (
+                      <img src={b.logo} alt={b.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border" />
+                    ) : (
+                      <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center text-[10px] text-muted-foreground">بدون شعار</div>
+                    )}
                   </td>
                   <td className="px-4 py-3.5 font-medium">{b.name}</td>
-                  <td className="px-4 py-3.5 text-muted-foreground">{b.productCount}</td>
+                  <td className="px-4 py-3.5 text-muted-foreground">{b.products_count || '-'}</td>
                   <td className="px-4 py-3.5 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -99,19 +174,15 @@ export default function BrandsPage() {
         </div>
       </div>
 
-      <FormModal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('brands.editBrand') : t('brands.addBrand')} onSubmit={handleSubmit}>
+      <FormModal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('brands.editBrand') : t('brands.addBrand')} onSubmit={handleSubmit} disabled={isSubmitting}>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('brands.name')}</Label>
-            <Input className="h-9" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input className="h-9" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('brands.uploadLogo')}</Label>
-            <div className="border-2 border-dashed rounded-xl p-8 text-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:bg-primary/[0.02] transition-all duration-200">
-              <Upload className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              <p className="text-xs font-medium">{t('brands.uploadLogo')}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 2MB</p>
-            </div>
+            <Input type="file" accept="image/*" className="cursor-pointer" onChange={(e) => setForm({ ...form, logo: e.target.files?.[0] || null })} />
           </div>
         </div>
       </FormModal>
