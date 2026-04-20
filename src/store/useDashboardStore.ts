@@ -7,6 +7,13 @@ interface DashboardStats {
   totalCategories: number;
   totalBrands: number;
   hiddenProducts: number;
+  monthlyData?: any[]; // ✅ تمت إضافة بيانات الرسم الشريطي
+  categoryDistribution?: any[]; // ✅ تمت إضافة بيانات الرسم الدائري
+  support?: {
+    maintenance_centers: number;
+    videos: number;
+    downloads: number;
+  };
 }
 
 interface RecentProduct {
@@ -25,7 +32,14 @@ interface DashboardState {
 
 export const useDashboardStore = create<DashboardState>((set) => ({
   // القيم الافتراضية
-  stats: { totalProducts: 0, totalCategories: 0, totalBrands: 0, hiddenProducts: 0 },
+  stats: { 
+    totalProducts: 0, 
+    totalCategories: 0, 
+    totalBrands: 0, 
+    hiddenProducts: 0,
+    monthlyData: [], // ✅ إضافة القيم الافتراضية
+    categoryDistribution: [] 
+  },
   recentProducts: [],
   loading: true,
   error: null,
@@ -38,6 +52,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       const token = localStorage.getItem("admin_token");
       const apiUrl = API_BASE_URL;
       
+      // تأكد أن هذا الرابط يطابق الرابط في ملف api.php في اللارافل
       const response = await fetch(`${apiUrl}/api/admin/dashboard-stats`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -49,12 +64,17 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       
       if (response.ok && json.status) {
         const d = json.data;
+        
         set({
+          // ✅ تم التعديل هنا: استخدام المفاتيح الجديدة المطابقة للباك اند
           stats: {
-            totalProducts: d.products_count || 0,
-            totalCategories: d.categories_count || 0,
-            totalBrands: d.brands_count || 0,
-            hiddenProducts: (d.products_count || 0) - (d.active_products || 0)
+            totalProducts: d.totalProducts || 0,
+            totalCategories: d.totalCategories || 0,
+            totalBrands: d.totalBrands || 0,
+            hiddenProducts: d.hiddenProducts || 0,
+            monthlyData: d.monthlyData || [],
+            categoryDistribution: d.categoryDistribution || [],
+            support: d.support
           },
           recentProducts: d.recent_products || [],
           loading: false
