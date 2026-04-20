@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from '../config';
+
 
 // تعريف واجهة استجابة الخادم لضمان أمان الأنواع
 interface LoginResponse {
@@ -36,7 +38,7 @@ export default function AdminLogin() {
     setSuccess("");
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const response = await fetch(`${apiUrl}/api/admin/login`, {
         method: "POST",
         headers: {

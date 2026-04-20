@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/config';
 import { create } from 'zustand';
 
 // واجهات الأنواع (Type Definitions) لضمان أمان الكود
@@ -35,7 +36,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       const response = await fetch(`${apiUrl}/api/admin/dashboard-stats`, {
         headers: {

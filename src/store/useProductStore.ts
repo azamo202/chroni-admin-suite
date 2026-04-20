@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '../config';
 
 interface ProductState {
   products: any[];
@@ -26,7 +27,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const headers = { "Authorization": `Bearer ${token}`, "Accept": "application/json" };
       
       // بناء Query Parameters
@@ -69,7 +70,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   createProduct: async (formData) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       const res = await fetch(`${apiUrl}/api/products`, {
         method: "POST", // FormData دائماً مع POST
@@ -96,7 +97,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   updateProduct: async (id, formData) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       // توافق مع إطار عمل Laravel لتحديث الملفات عبر PUT/PATCH
       formData.append("_method", "POST");
@@ -125,7 +126,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   deleteProduct: async (id) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       const res = await fetch(`${apiUrl}/api/products/${id}`, {
         method: "DELETE",

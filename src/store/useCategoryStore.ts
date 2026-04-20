@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '../config';
 
 export interface Category {
   id: string | number;
@@ -35,7 +36,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     set({ loading: true });
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
 
       const res = await fetch(`${apiUrl}/api/categories`, {
         headers: {
@@ -58,7 +59,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   createCategory: async (data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
 
       const formData = new FormData();
       formData.append("name[ar]", data.nameAr);
@@ -93,7 +94,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   updateCategory: async (id, data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
 
       const formData = new FormData();
       formData.append("name[ar]", data.nameAr);
@@ -131,7 +132,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   deleteCategory: async (id) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
 
       const res = await fetch(`${apiUrl}/api/categories/${id}`, {
         method: "DELETE",

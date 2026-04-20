@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '@/config';
 
 interface ProductDetailState {
   product: any | null;
@@ -19,7 +20,7 @@ export const useProductDetailStore = create<ProductDetailState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
 
       const res = await fetch(`${apiUrl}/api/products/${id}`, {
         headers: { 
@@ -45,7 +46,7 @@ export const useProductDetailStore = create<ProductDetailState>((set, get) => ({
     set({ isToggling: true });
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
 
       const formData = new FormData();
       formData.append("_method", "post");

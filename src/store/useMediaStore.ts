@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '@/config';
 
 // تعريف الواجهات (Interfaces)
 export interface MaintenanceCenter {
@@ -68,7 +69,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
     set({ loading: true });
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const headers = { "Authorization": `Bearer ${token}`, "Accept": "application/json" };
       
       const [centersRes, videosRes, downloadsRes] = await Promise.all([
@@ -97,7 +98,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   createCenter: async (data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/maintenance-centers`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/json" },
@@ -112,7 +113,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   updateCenter: async (id, data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/maintenance-centers/${id}`, {
         method: "POST", // توافق مع Laravel Spoofing
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/json" },
@@ -127,7 +128,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   deleteCenter: async (id) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/maintenance-centers/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
@@ -141,7 +142,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   createVideo: async (data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/support-videos`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/json" },
@@ -156,7 +157,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   updateVideo: async (id, data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/support-videos/${id}`, {
         method: "POST", // توافق مع Laravel Spoofing
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/json" },
@@ -171,7 +172,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   deleteVideo: async (id) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/support-videos/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
@@ -185,7 +186,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   createDownload: async (formData) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/support-downloads`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" },
@@ -200,7 +201,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   updateDownload: async (id, formData) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       formData.append("_method", "PUT"); // توافق مع Laravel Spoofing
       const res = await fetch(`${apiUrl}/api/support-downloads/${id}`, {
         method: "POST", 
@@ -216,7 +217,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   deleteDownload: async (id) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/support-downloads/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }

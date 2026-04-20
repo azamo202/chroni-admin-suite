@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '../config';
 
 export interface Brand {
   id: number;
@@ -24,7 +25,7 @@ export const useBrandStore = create<BrandState>((set, get) => ({
     set({ loading: true });
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       const res = await fetch(`${apiUrl}/api/brands`, {
         headers: { 
@@ -47,7 +48,7 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   createBrand: async (data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       // تجهيز البيانات كـ FormData لدعم رفع الملفات
       const formData = new FormData();
@@ -81,7 +82,7 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   updateBrand: async (id, data) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       const formData = new FormData();
       formData.append("name", data.name);
@@ -116,7 +117,7 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   deleteBrand: async (id) => {
     try {
       const token = localStorage.getItem("admin_token");
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = API_BASE_URL;
       
       const res = await fetch(`${apiUrl}/api/brands/${id}`, {
         method: "DELETE",

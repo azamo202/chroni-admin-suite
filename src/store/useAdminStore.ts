@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '../config';
 
 export interface AdminProfile {
   id: number;
@@ -34,7 +35,7 @@ export const useAdminStore = create<AdminState>((set, get) => {
 
       try {
         const token = localStorage.getItem("admin_token");
-        const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+        const apiUrl = API_BASE_URL;
 
         const res = await fetch(`${apiUrl}/api/admin/profile`, {
           headers: {
@@ -60,7 +61,7 @@ export const useAdminStore = create<AdminState>((set, get) => {
       set({ isLoggingOut: true });
       try {
         const token = localStorage.getItem("admin_token");
-        const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+        const apiUrl = API_BASE_URL;
 
         await fetch(`${apiUrl}/api/admin/logout`, {
           method: "POST",
@@ -82,7 +83,7 @@ export const useAdminStore = create<AdminState>((set, get) => {
     createAdmin: async (adminData) => {
       try {
         const token = localStorage.getItem("admin_token");
-        const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+        const apiUrl = API_BASE_URL;
 
         const res = await fetch(`${apiUrl}/api/admin/users`, {
           method: "POST",
