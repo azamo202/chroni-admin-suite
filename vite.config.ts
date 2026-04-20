@@ -28,16 +28,5 @@ export default defineConfig(({ mode }) => ({
   // إعدادات بناء النسخة النهائية (Production Build)
   build: {
     target: "esnext",
-    // تقسيم الملفات (Chunk Splitting) لتسريع التحميل الأولي للموقع
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-  if (id.includes("node_modules")) {
-    return "vendor";
-  }
-
-        },
-      },
-    },
   },
 }));
