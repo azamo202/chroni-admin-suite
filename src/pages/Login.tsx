@@ -1,68 +1,103 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+// تعريف واجهة استجابة الخادم لضمان أمان الأنواع
+interface LoginResponse {
+  status: boolean;
+  message?: string;
+  data?: {
+    token: string;
+    admin: Record<string, unknown>;
+  };
+}
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('admin@example.com'); // قيم افتراضية للتجربة بناءً على طلبك
-  const [password, setPassword] = useState('123456789');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // التحقق المبدئي من البيانات
+    if (!email.trim() || !password.trim()) {
+      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+      return;
+    }
+
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/login`, {
-        method: 'POST',
+      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const response = await fetch(`${apiUrl}/api/admin/login`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
 
-      if (data.status) {
-        setSuccess(data.message);
-        
-        // حفظ التوكن في التخزين المحلي (أو يمكنك استخدام الكوكيز لمزيد من الأمان)
-        localStorage.setItem('admin_token', data.data.token);
-        localStorage.setItem('admin_data', JSON.stringify(data.data.admin));
+      if (response.ok && data.status && data.data) {
+        setSuccess(data.message || "تم تسجيل الدخول بنجاح.");
 
-        // التوجيه إلى صفحة الداشبورد بعد نجاح تسجيل الدخول
-        setTimeout(() => {
-          navigate('/'); 
-        }, 1000);
+        // ملاحظة أمنية: في بيئات الإنتاج عالية الحساسية، يُفضل تخزين التوكن في HttpOnly Cookies بدلاً من LocalStorage
+        localStorage.setItem("admin_token", data.data.token);
+        localStorage.setItem("admin_data", JSON.stringify(data.data.admin));
+
+        // التوجيه الفوري إلى صفحة الداشبورد
+        navigate("/");
       } else {
-        setError(data.message || 'بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.');
+        setError(
+          data.message || "بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.",
+        );
       }
     } catch (err) {
-      setError('حدث خطأ في الاتصال بالخادم، يرجى التحقق من الرابط أو المحاولة لاحقاً.');
+      console.error("Login Error:", err);
+      setError(
+        "حدث خطأ في الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت أو المحاولة لاحقاً.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8" dir="rtl">
+    <div
+      className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8"
+      dir="rtl"
+    >
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        
         {/* قسم الشعار والعنوان */}
         <div className="text-center mb-8">
-          {/* يمكنك استبدال العنصر التالي بصورة الشعار الحقيقية */}
-          <div className="mx-auto h-20 w-20 bg-gray-100 rounded-full flex items-center justify-center border-4 border-[#D32F2F] text-[#D32F2F] font-bold text-3xl mb-4 shadow-sm">
-            HC
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#D32F2F]/30 to-red-100 blur-md scale-110"></div>
+              <div className="relative h-24 w-24 rounded-full bg-white border-4 border-[#D32F2F] shadow-xl p-1">
+                <img
+                  src="/images/logo.png"
+                  alt="Logo"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              </div>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">تسجيل الدخول للإدارة</h2>
-          <p className="text-sm text-gray-500 mt-2">يرجى إدخال بياناتك للوصول إلى لوحة التحكم</p>
+          <h2 className="text-2xl font-bold text-gray-800">
+            تسجيل الدخول للإدارة
+          </h2>
+          <p className="text-sm text-gray-500 mt-2">
+            يرجى إدخال بياناتك للوصول إلى لوحة التحكم
+          </p>
         </div>
 
         {/* التنبيهات (النجاح أو الخطأ) */}
@@ -80,7 +115,10 @@ export default function AdminLogin() {
         {/* نموذج تسجيل الدخول */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               البريد الإلكتروني
             </label>
             <input
@@ -90,12 +128,15 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#D32F2F] focus:border-[#D32F2F] transition-colors bg-gray-50 focus:bg-white text-gray-900 outline-none"
-              placeholder="admin@example.com"
+              placeholder="name@company.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               كلمة المرور
             </label>
             <input
@@ -116,14 +157,30 @@ export default function AdminLogin() {
           >
             {loading ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 جاري التحقق...
               </span>
             ) : (
-              'دخول'
+              "دخول"
             )}
           </button>
         </form>

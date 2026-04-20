@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +24,7 @@ export default function SettingsPage() {
   const isRtl = ['ar', 'ku'].includes(i18n.language);
 
   return (
-    <AdminLayout>
+    <>
       <PageHeader title={t('settings.title')} />
 
       <div className="max-w-2xl space-y-5">
@@ -89,6 +88,6 @@ export default function SettingsPage() {
 
         <Button onClick={handleSave} size="sm">{t('common.save')}</Button>
       </div>
-    </AdminLayout>
+    </>
   );
 }

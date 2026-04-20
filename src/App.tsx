@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense } from "react";
+import { AdminLayout } from "@/layouts/AdminLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "@/i18n";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -14,8 +16,23 @@ const MediaPage = lazy(() => import("./pages/MediaPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
+const AdminsPage = lazy(() => import("./pages/AdminsPage"));
+
 
 const queryClient = new QueryClient();
+
+// اعتراض جميع طلبات الخادم (Fetch Interceptor) للتعامل مع التوكن المنتهي
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  const response = await originalFetch(...args);
+  // إذا استجاب الخادم بخطأ 401 (غير مصرح) والمستخدم ليس في صفحة تسجيل الدخول
+  if (response.status === 401 && window.location.pathname !== '/login') {
+    localStorage.removeItem("admin_token");
+    // توجيه المستخدم لصفحة تسجيل الدخول فوراً
+    window.location.href = '/login';
+  }
+  return response;
+};
 
 // مكون المسار المحمي (Protected Route)
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -27,9 +44,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const Loading = () => (
-  <div className="flex min-h-screen items-center justify-center">
+  <div className="flex h-[80vh] w-full items-center justify-center">
     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
   </div>
+);
+
+// تجميع التخطيط الخارجي للحفاظ على السايد بار ثابتاً أثناء التنقل
+const AppLayout = () => (
+  <ProtectedRoute>
+    <AdminLayout>
+      <ErrorBoundary>
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
+      </ErrorBoundary>
+    </AdminLayout>
+  </ProtectedRoute>
 );
 
 const App = () => (
@@ -37,19 +67,22 @@ const App = () => (
     <TooltipProvider>
       <Sonner />
       <BrowserRouter>
-        <Suspense fallback={<Loading />}>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} />
-            <Route path="/products/:id" element={<ProtectedRoute><ProductDetailPage /></ProtectedRoute>} />
-            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
-            <Route path="/brands" element={<ProtectedRoute><BrandsPage /></ProtectedRoute>} />
-            <Route path="/media" element={<ProtectedRoute><MediaPage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/login" element={<Suspense fallback={<Loading />}><Login /></Suspense>} />
+            
+            {/* استخدام AppLayout للمسارات المحمية بحيث لا يُعاد تحميل السايد بار */}
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/AdminsPage" element={<AdminsPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
+              <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/brands" element={<BrandsPage />} />
+              <Route path="/media" element={<MediaPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
+            <Route path="*" element={<Suspense fallback={<Loading />}><NotFound /></Suspense>} />
           </Routes>
-        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

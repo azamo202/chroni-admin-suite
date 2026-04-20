@@ -19,4 +19,27 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
+  
+  // إزالة console.log و debugger في بيئة الإنتاج فقط لضمان الأمان والسرعة
+  esbuild: {
+    drop: mode === "production" ? ["console", "debugger"] : [],
+  },
+  
+  // إعدادات بناء النسخة النهائية (Production Build)
+  build: {
+    target: "esnext",
+    // تقسيم الملفات (Chunk Splitting) لتسريع التحميل الأولي للموقع
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
+              return "vendor-react";
+            }
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
 }));

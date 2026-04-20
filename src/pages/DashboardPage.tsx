@@ -1,67 +1,63 @@
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
-import { Package, FolderTree, Tag, EyeOff, Activity, TrendingUp } from 'lucide-react';
-import { AdminLayout } from '@/layouts/AdminLayout';
+import { useEffect, useMemo } from 'react';
+import { Package, FolderTree, Tag, EyeOff, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 import { StatCard, PageHeader } from '@/components/shared';
 import { monthlyData, categoryDistribution } from '@/data/mock';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Badge } from '@/components/ui/badge';
-
-interface ActivityLog {
-  id: string;
-  action: string;
-  target: string;
-  timestamp: string;
-}
+import { useDashboardStore } from '@/store/useDashboardStore';
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
-  const [stats, setStats] = useState({ totalProducts: 0, totalCategories: 0, totalBrands: 0, hiddenProducts: 0 });
-  const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // استدعاء الحالة من Zustand
+  const { stats, recentProducts, loading, error, fetchData } = useDashboardStore();
 
+  // جلب البيانات عند تحميل الصفحة
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        const token = localStorage.getItem("admin_token");
-        const response = await fetch("http://127.0.0.1:8000/api/admin/dashboard-stats", {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Accept": "application/json"
-          }
-        });
-        const json = await response.json();
-        
-        if (json.status) {
-          const d = json.data;
-          setStats({
-            totalProducts: d.products_count || 0,
-            totalCategories: d.categories_count || 0,
-            totalBrands: d.brands_count || 0,
-            hiddenProducts: (d.products_count || 0) - (d.active_products || 0)
-          });
+    fetchData();
+  }, [fetchData]);
 
-          const currentLang = i18n.language || 'ar'; // معرفة اللغة الحالية للوحة
-          const recentActs = (d.recent_products || []).map((p: any) => ({
-            id: p.id.toString(),
-            action: t('products.addProduct'), // نص الإجراء "إضافة منتج"
-            target: p.name?.[currentLang] || p.name?.ar || p.name?.en || 'منتج جديد', // جلب الاسم باللغة المناسبة
-            timestamp: p.created_at
-          }));
-          setActivities(recentActs);
-        }
-      } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // استخدام useMemo لتحسين الأداء: إعادة حساب الأنشطة فقط عند تغير اللغة أو البيانات القادمة من السيرفر
+  const activities = useMemo(() => {
+    const currentLang = i18n.language || 'ar';
+    return recentProducts.map((p) => ({
+      id: p.id.toString(),
+      action: t('products.addProduct'), 
+      target: p.name?.[currentLang] || p.name?.ar || p.name?.en || 'منتج جديد',
+      timestamp: p.created_at
+    }));
+  }, [recentProducts, i18n.language, t]);
 
-    fetchDashboardStats();
-  }, []);
+  // عرض حالة التحميل (يفضل استبدالها بـ Skeleton Loader في بيئة الإنتاج)
+  // نظهر شاشة التحميل للداشبورد فقط إذا لم يكن لدينا بيانات بالفعل
+  if (loading && recentProducts.length === 0) {
+    return (
+      <>
+        <div className="flex h-[60vh] items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D32F2F]"></div>
+        </div>
+      </>
+    );
+  }
+
+  // عرض الأخطاء إن وجدت
+  if (error) {
+    return (
+      <>
+        <div className="flex flex-col items-center justify-center h-[60vh] text-red-500 gap-4">
+          <AlertCircle className="h-12 w-12" />
+          <p className="text-lg font-medium">{error}</p>
+          <button onClick={fetchData} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+            إعادة المحاولة
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
-    <AdminLayout>
+    <>
       <PageHeader title={t('dashboard.title')} description={t('dashboard.subtitle') || 'Overview of your catalog'} />
 
       {/* Stats */}
@@ -74,10 +70,10 @@ export default function DashboardPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-        <div className="bg-card border rounded-xl p-5">
+        <div className="bg-card border rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-sm font-semibold">{t('dashboard.monthlySales')}</h3>
-            <Badge variant="secondary" className="text-[10px] font-normal gap-1">
+            <h3 className="text-sm font-semibold text-gray-800">{t('dashboard.monthlySales')}</h3>
+            <Badge variant="secondary" className="text-[10px] font-normal gap-1 bg-green-50 text-green-700 border-green-200">
               <TrendingUp className="h-3 w-3" /> +18%
             </Badge>
           </div>
@@ -87,15 +83,16 @@ export default function DashboardPage() {
               <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip
+                cursor={{ fill: 'transparent' }}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid hsl(0 0% 92%)' }}
               />
-              <Bar dataKey="products" fill="hsl(0, 72%, 38%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="products" fill="#D32F2F" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-card border rounded-xl p-5">
-          <h3 className="text-sm font-semibold mb-5">{t('dashboard.categoryDist')}</h3>
+        <div className="bg-card border rounded-xl p-5 shadow-sm">
+          <h3 className="text-sm font-semibold mb-5 text-gray-800">{t('dashboard.categoryDist')}</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
@@ -109,7 +106,7 @@ export default function DashboardPage() {
                 strokeWidth={0}
               >
                 {categoryDistribution.map((entry, i) => (
-                  <Cell key={i} fill={entry.fill} />
+                  <Cell key={`cell-${i}`} fill={entry.fill} />
                 ))}
               </Pie>
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid hsl(0 0% 92%)' }} />
@@ -117,7 +114,7 @@ export default function DashboardPage() {
           </ResponsiveContainer>
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2 justify-center">
             {categoryDistribution.map((c) => (
-              <div key={c.name} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div key={c.name} className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
                 <div className="h-2 w-2 rounded-full" style={{ backgroundColor: c.fill }} />
                 {c.name}
               </div>
@@ -127,25 +124,31 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-card border rounded-xl p-5">
-        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+      <div className="bg-card border rounded-xl p-5 shadow-sm">
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-800">
           <Activity className="h-4 w-4 text-muted-foreground" />
           {t('dashboard.recentActivity')}
         </h3>
-        <div className="divide-y">
-          {activities.slice(0, 6).map((a) => (
-            <div key={a.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">{a.action}</p>
-                <p className="text-xs text-muted-foreground">{a.target}</p>
+        {activities.length > 0 ? (
+          <div className="divide-y divide-gray-100">
+            {activities.slice(0, 6).map((a) => (
+              <div key={a.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-gray-50/50 transition-colors px-2 rounded-md">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-gray-800">{a.action}</p>
+                  <p className="text-xs text-muted-foreground">{a.target}</p>
+                </div>
+                <span className="text-[11px] text-muted-foreground whitespace-nowrap bg-gray-100 px-2 py-1 rounded">
+                  {new Date(a.timestamp).toLocaleDateString(i18n.language)}
+                </span>
               </div>
-              <span className="text-[11px] text-muted-foreground whitespace-nowrap">
-                {new Date(a.timestamp).toLocaleDateString()}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-sm text-gray-500">
+            لا توجد أنشطة حديثة لعرضها.
+          </div>
+        )}
       </div>
-    </AdminLayout>
+    </>
   );
 }
