@@ -90,7 +90,7 @@ export const useBrandStore = create<BrandState>((set, get) => ({
         formData.append("logo", data.logo);
       }
       // إضافة _method ليتعامل Laravel مع التحديث بشكل صحيح مع FormData
-      formData.append("_method", "PUT");
+      formData.append("_method", "POST");
 
       const res = await fetch(`${apiUrl}/api/brands/${id}`, {
         method: "POST", // يجب أن يكون POST عند إرسال FormData مع Laravel

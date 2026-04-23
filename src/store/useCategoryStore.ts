@@ -63,8 +63,8 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
       const formData = new FormData();
       formData.append("name[ar]", data.nameAr);
-      formData.append("name[en]", data.nameEn);
-      formData.append("name[ku]", data.nameKu);
+      formData.append("name[en]", data.nameEn || data.nameAr);
+      formData.append("name[ku]", data.nameKu || data.nameAr);
       formData.append("is_active", data.isActive);
       if (data.parentId) formData.append("parent_id", data.parentId);
       if (data.image) formData.append("image", data.image);
@@ -98,14 +98,14 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
       const formData = new FormData();
       formData.append("name[ar]", data.nameAr);
-      formData.append("name[en]", data.nameEn);
-      formData.append("name[ku]", data.nameKu);
+      formData.append("name[en]", data.nameEn || data.nameAr);
+      formData.append("name[ku]", data.nameKu || data.nameAr);
       formData.append("is_active", data.isActive);
       if (data.parentId) formData.append("parent_id", data.parentId);
       if (data.image) formData.append("image", data.image);
       
       // تم التصحيح: Laravel يحتاج PUT مع FormData وليس POST
-      formData.append("_method", "PUT"); 
+      formData.append("_method", "post"); 
 
       const res = await fetch(`${apiUrl}/api/categories/${id}`, {
         method: "POST", // يظل POST في الـ Fetch، و Laravel يقرأ الـ _method

@@ -108,15 +108,14 @@ export default function BrandsPage() {
               <tr className="border-b bg-muted/40">
                 <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.logo')}</th>
                 <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.name')}</th>
-                <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.productCount')}</th>
                 <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">{t('brands.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton cols={4} />
+                <TableSkeleton cols={3} />
               ) : brands.length === 0 ? (
-                <tr><td colSpan={4}><EmptyState message={t('common.noResults')} /></td></tr>
+                <tr><td colSpan={3}><EmptyState message={t('common.noResults')} /></td></tr>
               ) : brands.map((b) => (
                 <tr key={b.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
@@ -127,7 +126,6 @@ export default function BrandsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3.5 font-medium text-gray-800">{b.name}</td>
-                  <td className="px-4 py-3.5 text-muted-foreground">{b.products_count || '-'}</td>
                   <td className="px-4 py-3.5 text-end">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

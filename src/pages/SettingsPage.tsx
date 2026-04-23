@@ -16,9 +16,16 @@ export default function SettingsPage() {
     contactPhone: '+964 750 000 0000',
     whatsapp: '+964 750 000 0000',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSubmitting(true);
+    
+    // محاكاة طلب الشبكة (يمكنك استبدالها بـ API الفعلي لاحقاً)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     toast.success(t('settings.saved'));
+    setIsSubmitting(false);
   };
 
   const isRtl = ['ar', 'ku'].includes(i18n.language);
@@ -86,7 +93,16 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <Button onClick={handleSave} size="sm">{t('common.save')}</Button>
+        <Button onClick={handleSave} disabled={isSubmitting} size="sm" className="min-w-[120px]">
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              جاري الحفظ...
+            </span>
+          ) : (
+            t('common.save')
+          )}
+        </Button>
       </div>
     </>
   );

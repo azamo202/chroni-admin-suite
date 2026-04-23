@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
-import { Wrench, Video, Download, Plus, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { Wrench, Video, Download, Plus, Pencil, Trash2, MoreHorizontal, Search } from 'lucide-react';
 import { PageHeader, TableSkeleton, EmptyState, FormModal, ConfirmDialog } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,7 @@ const parseI18n = (field: any) => {
 export default function MediaPage() {
   const { i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<'centers' | 'videos' | 'downloads'>('centers');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // استدعاء حالة المتجر
@@ -68,6 +69,53 @@ export default function MediaPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // --- فلترة البيانات محلياً لتطابق منطق الكنترولات في الباك اند بشكل ممتاز ---
+  const filteredCenters = useMemo(() => {
+    if (!searchQuery.trim()) return centers;
+    const q = searchQuery.toLowerCase();
+    return centers.filter((c) => {
+      const n = parseI18n(c.name);
+      const a = parseI18n(c.address);
+      const p = c.phone || c.phone_number || '';
+      return (
+        n.ar.toLowerCase().includes(q) ||
+        n.en.toLowerCase().includes(q) ||
+        n.ku.toLowerCase().includes(q) ||
+        p.toLowerCase().includes(q) ||
+        a.ar.toLowerCase().includes(q) ||
+        a.en.toLowerCase().includes(q) ||
+        a.ku.toLowerCase().includes(q)
+      );
+    });
+  }, [centers, searchQuery]);
+
+  const filteredVideos = useMemo(() => {
+    if (!searchQuery.trim()) return videos;
+    const q = searchQuery.toLowerCase();
+    return videos.filter((v) => {
+      const t = parseI18n(v.title);
+      return (
+        t.ar.toLowerCase().includes(q) ||
+        t.en.toLowerCase().includes(q) ||
+        t.ku.toLowerCase().includes(q) ||
+        ((v as any).title_ar && String((v as any).title_ar).toLowerCase().includes(q))
+      );
+    });
+  }, [videos, searchQuery]);
+
+  const filteredDownloads = useMemo(() => {
+    if (!searchQuery.trim()) return downloads;
+    const q = searchQuery.toLowerCase();
+    return downloads.filter((d) => {
+      const t = parseI18n(d.title || d.name);
+      return (
+        t.ar.toLowerCase().includes(q) ||
+        t.en.toLowerCase().includes(q) ||
+        t.ku.toLowerCase().includes(q)
+      );
+    });
+  }, [downloads, searchQuery]);
 
   // --- معالجات مراكز الصيانة ---
   const openAddCenter = () => {
@@ -246,21 +294,37 @@ export default function MediaPage() {
         }
       />
 
-      <div className="flex gap-2 border-b mb-6 overflow-x-auto">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex gap-2 border-b overflow-x-auto w-full sm:w-auto">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id as any); setSearchQuery(''); }}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground ltr:left-3 rtl:right-3" />
+          <Input 
+            placeholder={
+              activeTab === 'centers' ? "بحث باسم المركز، الهاتف، أو العنوان..." : 
+              activeTab === 'videos' ? "بحث بعنوان الفيديو..." : 
+              "بحث باسم الملف..."
+            }
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="ltr:pl-9 rtl:pr-9 h-9 text-sm"
+          />
+        </div>
       </div>
 
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
@@ -270,7 +334,6 @@ export default function MediaPage() {
               {activeTab === 'centers' && (
                 <tr>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">اسم المركز</th>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">المدينة</th>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">رقم الهاتف</th>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">العنوان</th>
                   <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">الإجراءات</th>
@@ -293,17 +356,18 @@ export default function MediaPage() {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton cols={activeTab === 'centers' ? 5 : 3} rows={4} />
+                <TableSkeleton cols={activeTab === 'centers' ? 4 : 3} rows={4} />
               ) : (
                 <>
                   {/* مراكز الصيانة */}
                   {activeTab === 'centers' && (
-                    centers.length === 0 ? <tr><td colSpan={5}><EmptyState message="لا توجد مراكز صيانة مضافة" /></td></tr> :
-                    centers.map((center, i) => (
+                filteredCenters.length === 0 ? <tr><td colSpan={4}><EmptyState message="لا توجد مراكز صيانة مطابقة للبحث" /></td></tr> :
+                filteredCenters.map((center, i) => (
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(center.name, i18n.language) || center.name || 'بدون اسم'}</td>
-                        <td className="px-4 py-3.5 text-muted-foreground">{getLocalizedValue(center.city, i18n.language) || center.city || '-'}</td>
-                        <td className="px-4 py-3.5 text-muted-foreground" dir="ltr">{center.phone || center.phone_number || '-'}</td>
+                        <td className="px-4 py-3.5 text-muted-foreground text-start">
+                          <span dir="ltr">{center.phone || center.phone_number || '-'}</span>
+                        </td>
                         <td className="px-4 py-3.5 text-muted-foreground">{getLocalizedValue(center.address, i18n.language) || center.address || '-'}</td>
                         <td className="px-4 py-3.5 text-end">
                           <DropdownMenu>
@@ -321,12 +385,12 @@ export default function MediaPage() {
 
                   {/* الفيديوهات */}
                   {activeTab === 'videos' && (
-                    videos.length === 0 ? <tr><td colSpan={3}><EmptyState message="لا توجد فيديوهات مضافة" /></td></tr> :
-                    videos.map((video, i) => (
+                filteredVideos.length === 0 ? <tr><td colSpan={3}><EmptyState message="لا توجد فيديوهات مطابقة للبحث" /></td></tr> :
+                filteredVideos.map((video, i) => (
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(video.title, i18n.language) || video.title || 'بدون عنوان'}</td>
-                        <td className="px-4 py-3.5">
-                          <a href={video.youtube_url || video.url || video.video_url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium" dir="ltr">
+                        <td className="px-4 py-3.5 text-start">
+                          <a href={video.youtube_url || video.url || video.video_url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">
                             عرض الفيديو
                           </a>
                         </td>
@@ -346,8 +410,8 @@ export default function MediaPage() {
 
                   {/* الملفات */}
                   {activeTab === 'downloads' && (
-                    downloads.length === 0 ? <tr><td colSpan={3}><EmptyState message="لا توجد ملفات مضافة" /></td></tr> :
-                    downloads.map((file, i) => (
+                filteredDownloads.length === 0 ? <tr><td colSpan={3}><EmptyState message="لا توجد ملفات مطابقة للبحث" /></td></tr> :
+                filteredDownloads.map((file, i) => (
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(file.title || file.name, i18n.language) || file.title || 'بدون اسم'}</td>
                         <td className="px-4 py-3.5">

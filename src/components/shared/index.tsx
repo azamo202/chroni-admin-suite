@@ -32,10 +32,10 @@ interface FormModalProps {
   description?: string;
   children: ReactNode;
   onSubmit: () => void;
-  loading?: boolean;
+  disabled?: boolean;
 }
 
-export function FormModal({ open, onOpenChange, title, description, children, onSubmit, loading }: FormModalProps) {
+export function FormModal({ open, onOpenChange, title, description, children, onSubmit, disabled }: FormModalProps) {
   const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -49,8 +49,15 @@ export function FormModal({ open, onOpenChange, title, description, children, on
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button size="sm" onClick={onSubmit} disabled={loading}>
-            {t('common.save')}
+          <Button size="sm" onClick={onSubmit} disabled={disabled} className="min-w-[120px]">
+            {disabled ? (
+              <span className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                جاري الحفظ...
+              </span>
+            ) : (
+              t('common.save')
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
