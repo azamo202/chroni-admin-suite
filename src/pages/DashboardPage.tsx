@@ -42,8 +42,8 @@ export default function DashboardPage() {
     const currentLang = i18n.language || 'ar';
     return recentProducts.map((p) => ({
       id: p.id.toString(),
-      action: t('products.addProduct'), 
-      target: p.name?.[currentLang] || p.name?.ar || p.name?.en || 'منتج جديد',
+      action: t('products.addProduct', 'إضافة منتج'), 
+      target: p.name?.[currentLang] || p.name?.ar || p.name?.en || t('dashboard.newProduct', 'منتج جديد'),
       timestamp: p.created_at
     }));
   }, [recentProducts, i18n.language, t]);
@@ -62,9 +62,9 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-red-500 gap-4">
         <AlertCircle className="h-12 w-12" />
-        <p className="text-lg font-medium">{error}</p>
+        <p className="text-lg font-medium">{error || t('common.error', 'حدث خطأ غير متوقع')}</p>
         <button onClick={fetchData} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
-          إعادة المحاولة
+          {t('common.retry', 'إعادة المحاولة')}
         </button>
       </div>
     );
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                 <Bar dataKey="products" fill="#D32F2F" radius={[6, 6, 0, 0]} />
               </BarChart>
             ) : (
-               <div className="flex h-full items-center justify-center text-sm text-gray-400">لا توجد بيانات متاحة</div>
+               <div className="flex h-full items-center justify-center text-sm text-gray-400">{t('dashboard.noData', 'لا توجد بيانات متاحة')}</div>
             )}
           </ResponsiveContainer>
         </div>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid hsl(0 0% 92%)' }} />
               </PieChart>
              ) : (
-               <div className="flex h-full items-center justify-center text-sm text-gray-400">لا توجد بيانات متاحة</div>
+               <div className="flex h-full items-center justify-center text-sm text-gray-400">{t('dashboard.noData', 'لا توجد بيانات متاحة')}</div>
              )}
           </ResponsiveContainer>
           
@@ -172,7 +172,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="text-center py-6 text-sm text-gray-500">
-            لا توجد أنشطة حديثة لعرضها.
+            {t('dashboard.noRecentActivity', 'لا توجد أنشطة حديثة لعرضها.')}
           </div>
         )}
       </div>

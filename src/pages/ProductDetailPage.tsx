@@ -43,7 +43,7 @@ export default function ProductDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-32">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent shadow-sm" />
-        <p className="mt-4 text-muted-foreground text-sm font-medium">جاري تحميل تفاصيل المنتج...</p>
+        <p className="mt-4 text-muted-foreground text-sm font-medium">{t('products.loadingDetails', 'جاري تحميل تفاصيل المنتج...')}</p>
       </div>
     );
   }
@@ -54,8 +54,8 @@ export default function ProductDetailPage() {
         <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center mb-4 text-red-500">
           <AlertCircle className="h-8 w-8" />
         </div>
-        <p className="text-foreground text-lg font-bold">{error || "المنتج غير موجود"}</p>
-        <p className="text-muted-foreground text-sm mt-1">قد يكون تم حذفه أو أن الرابط غير صحيح.</p>
+        <p className="text-foreground text-lg font-bold">{error || t('products.notFound', "المنتج غير موجود")}</p>
+        <p className="text-muted-foreground text-sm mt-1">{t('products.notFoundDesc', "قد يكون تم حذفه أو أن الرابط غير صحيح.")}</p>
         <Button size="sm" className="mt-6 gap-2" onClick={() => navigate('/products')}>
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
           {t('products.backToProducts')}
@@ -64,10 +64,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  const productName = getLocalizedValue(product.name, i18n.language) || 'بدون اسم';
-  const productDesc = getLocalizedValue(product.description, i18n.language) || 'لا يوجد وصف متاح لهذا المنتج.';
-  const catName = getLocalizedValue(product.category?.name, i18n.language) || 'غير محدد';
-  const brandName = product.brand?.name || 'غير محدد';
+  const productName = getLocalizedValue(product.name, i18n.language) || t('common.unnamed', 'بدون اسم');
+  const productDesc = getLocalizedValue(product.description, i18n.language) || t('products.noDescription', 'لا يوجد وصف متاح لهذا المنتج.');
+  const catName = getLocalizedValue(product.category?.name, i18n.language) || t('products.notSpecified', 'غير محدد');
+  const brandName = product.brand?.name || t('products.notSpecified', 'غير محدد');
   const isActive = !!product.is_active;
   const primaryImage = product.image || (product.images?.length > 0 ? (product.images[0].url || product.images[0].image_path || product.images[0]) : null);
   const gallery = product.images?.map((img: any) => img.url || img.image_path || img) || [];
@@ -91,7 +91,7 @@ export default function ProductDetailPage() {
             ) : (
                <div className="w-full h-96 flex flex-col items-center justify-center bg-muted/50 text-muted-foreground">
                  <EyeOff className="h-10 w-10 mb-2 opacity-50" />
-                 <span>لا توجد صورة للمنتج</span>
+               <span>{t('products.noImage', 'لا توجد صورة للمنتج')}</span>
                </div>
             )}
           </div>
@@ -148,11 +148,11 @@ export default function ProductDetailPage() {
                 <span className="font-medium text-gray-800">{catName}</span>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground block mb-1">رقم الموديل</span>
+              <span className="text-xs text-muted-foreground block mb-1">{t('products.modelNumberLabel', 'رقم الموديل')}</span>
                 <span className="font-medium text-gray-800 uppercase tracking-wide">{product.model_number || '-'}</span>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground block mb-1">بلد المنشأ</span>
+              <span className="text-xs text-muted-foreground block mb-1">{t('products.originCountryLabel', 'بلد المنشأ')}</span>
                 <span className="font-medium text-gray-800">{product.origin_country || '-'}</span>
               </div>
             </div>
@@ -187,7 +187,7 @@ export default function ProductDetailPage() {
           {/* المميزات (Features) */}
           {product.features && product.features.length > 0 && (
             <div className="bg-card border rounded-xl p-6 shadow-sm">
-              <h3 className="text-base font-bold mb-4 text-gray-900">المميزات</h3>
+            <h3 className="text-base font-bold mb-4 text-gray-900">{t('products.featuresTitle', 'المميزات')}</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 {product.features.map((feat: any, i: number) => (
                   <li key={i} className="flex items-start gap-2">
@@ -203,7 +203,7 @@ export default function ProductDetailPage() {
           <div className="flex flex-wrap gap-3 pt-2">
             <Button className="gap-2" onClick={() => navigate('/products', { state: { editProduct: product } })}>
               <Pencil className="h-4 w-4" />
-              تعديل المنتج
+            {t('products.editProduct', 'تعديل المنتج')}
             </Button>
           </div>
         </div>

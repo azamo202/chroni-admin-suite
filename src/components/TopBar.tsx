@@ -58,7 +58,7 @@ export function TopBar() {
           <div className="h-6 w-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
             <User className="h-3 w-3 text-primary" />
           </div>
-          <span className="text-xs font-medium hidden sm:inline">Admin</span>
+          <span className="text-xs font-medium hidden sm:inline">{t('topbar.admin', 'مدير')}</span>
         </Button>
       </div>
     </header>

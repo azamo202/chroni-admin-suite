@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from '../config';
 
@@ -16,6 +17,9 @@ interface LoginResponse {
 }
 
 export default function AdminLogin() {
+  const { t, i18n } = useTranslation();
+  const isRtl = ['ar', 'ku'].includes(i18n.language);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,7 +33,7 @@ export default function AdminLogin() {
 
     // التحقق المبدئي من البيانات
     if (!email.trim() || !password.trim()) {
-      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+      setError(t('login.emptyFields', "يرجى إدخال البريد الإلكتروني وكلمة المرور."));
       return;
     }
 
@@ -77,7 +81,7 @@ export default function AdminLogin() {
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8"
-      dir="rtl"
+      dir={isRtl ? "rtl" : "ltr"}
     >
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
         {/* قسم الشعار والعنوان */}
@@ -95,10 +99,10 @@ export default function AdminLogin() {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-800">
-            تسجيل الدخول للإدارة
+            {t('login.title', "تسجيل الدخول للإدارة")}
           </h2>
           <p className="text-sm text-gray-500 mt-2">
-            يرجى إدخال بياناتك للوصول إلى لوحة التحكم
+            {t('login.subtitle', "يرجى إدخال بياناتك للوصول إلى لوحة التحكم")}
           </p>
         </div>
 
@@ -121,7 +125,7 @@ export default function AdminLogin() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              البريد الإلكتروني
+              {t('login.email', "البريد الإلكتروني")}
             </label>
             <input
               id="email"
@@ -139,7 +143,7 @@ export default function AdminLogin() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              كلمة المرور
+              {t('login.password', "كلمة المرور")}
             </label>
             <input
               id="password"
@@ -179,10 +183,10 @@ export default function AdminLogin() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                جاري التحقق...
+                {t('login.verifying', "جاري التحقق...")}
               </span>
             ) : (
-              "دخول"
+              t('login.submit', "دخول")
             )}
           </button>
         </form>

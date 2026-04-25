@@ -132,7 +132,7 @@ const parseSpecArray = (field: any) => {
 };
 
 // --- دالة مساعدة لاستخراج مسار القسم كاملاً (مثال: القسم الرئيسي / القسم الفرعي) ---
-const getCategoryPath = (categoryId: any, categories: any[], lang: string): string => {
+const getCategoryPath = (categoryId: any, categories: any[], lang: string, t: any): string => {
   if (!categoryId || !categories || !Array.isArray(categories)) return "";
   let path: string[] = [];
   const target = String(categoryId);
@@ -141,7 +141,7 @@ const getCategoryPath = (categoryId: any, categories: any[], lang: string): stri
     for (const cat of cats) {
       const next = [...current, cat];
       if (String(cat.id) === target) {
-        path = next.map((c) => getLocalizedValue(c.name, lang) || "بدون اسم");
+        path = next.map((c) => getLocalizedValue(c.name, lang) || t("common.unnamed", "بدون اسم"));
         return true;
       }
       if (cat.children && Array.isArray(cat.children)) {
@@ -156,7 +156,7 @@ const getCategoryPath = (categoryId: any, categories: any[], lang: string): stri
 };
 
 // --- مكون مخصص لاختيار القسم بشكل شجري (Tree Select) باستخدام DropdownMenu ---
-const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, disabled = false, showAllOption = true }: any) => {
+const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, t, disabled = false, showAllOption = true }: any) => {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -189,7 +189,7 @@ const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, di
             style={{ paddingRight: level === 0 ? '0.5rem' : `${level * 1.5 + 0.5}rem` }}
             onClick={() => handleSelect(String(cat.id))}
           >
-            <span className="flex-1 text-right truncate">{getLocalizedValue(cat.name, i18n.language) || "بدون اسم"}</span>
+            <span className="flex-1 text-right truncate">{getLocalizedValue(cat.name, i18n.language) || t("common.unnamed", "بدون اسم")}</span>
             {hasChildren && (
               <div 
                 className="p-1 rounded hover:bg-gray-200 text-gray-500 mr-2 flex items-center justify-center transition-colors"
@@ -220,7 +220,7 @@ const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, di
       <DropdownMenuContent className="max-h-72 overflow-y-auto p-0 z-50" style={{ width: 'var(--radix-dropdown-menu-trigger-width)', minWidth: '220px' }} align="start">
         {showAllOption && (
           <div className={`px-3 py-2.5 text-sm cursor-pointer transition-colors border-b ${value === 'all' || !value ? 'bg-primary/5 text-primary font-bold' : 'hover:bg-muted text-gray-700'}`} onClick={() => handleSelect('all')}>
-            الكل
+            {t("products.all", "الكل")}
           </div>
         )}
         <div className="py-1">{renderCategories(categories || [])}</div>
@@ -412,7 +412,7 @@ export default function ProductsPage() {
 
   const handleSubmit = async () => {
     if (!form.nameAr.trim()) {
-      toast.error("الاسم باللغة العربية مطلوب");
+      toast.error(t("products.nameArRequired", "الاسم باللغة العربية مطلوب"));
       return;
     }
 
@@ -501,7 +501,7 @@ export default function ProductsPage() {
       <div className="bg-card border rounded-xl p-4 shadow-sm mb-4 space-y-3">
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-semibold text-sm text-gray-800">
-            البحث والفلترة المتقدمة
+            {t("products.advancedSearch", "البحث والفلترة المتقدمة")}
           </h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -518,7 +518,7 @@ export default function ProductsPage() {
             />
           </div>
           <Input
-            placeholder="بحث برقم الموديل..."
+            placeholder={t("products.searchModel", "بحث برقم الموديل...")}
             value={modelNumber}
             onChange={(e) => {
               setModelNumber(e.target.value);
@@ -534,12 +534,12 @@ export default function ProductsPage() {
             }}
           >
             <SelectTrigger className="h-9 text-sm bg-white">
-              <SelectValue placeholder="حالة المنتج" />
+              <SelectValue placeholder={t("products.statusFilter", "حالة المنتج")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">جميع الحالات</SelectItem>
-              <SelectItem value="1">مفعل (معروض)</SelectItem>
-              <SelectItem value="0">مخفي</SelectItem>
+              <SelectItem value="all">{t("products.allStatuses", "جميع الحالات")}</SelectItem>
+              <SelectItem value="1">{t("products.active", "مفعل (معروض)")}</SelectItem>
+              <SelectItem value="0">{t("products.hidden", "مخفي")}</SelectItem>
             </SelectContent>
           </Select>
           <CategoryTreeSelect
@@ -548,6 +548,7 @@ export default function ProductsPage() {
             onChange={(v: string) => { setFilterCategory(v); setPage(1); }}
             placeholder={t("products.filterByCategory")}
             i18n={i18n}
+            t={t}
             showAllOption={true}
           />
           <Select
@@ -585,7 +586,7 @@ export default function ProductsPage() {
             }}
           >
             <X className="h-4 w-4 ltr:mr-1 rtl:ml-1" />
-            مسح الفلاتر
+            {t("products.clearFilters", "مسح الفلاتر")}
           </Button>
         </div>
       </div>
@@ -618,10 +619,10 @@ export default function ProductsPage() {
                   {t("products.category")}
                 </th>
                 <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
-                  الموديل / المنشأ
+                  {t("products.modelOrigin", "الموديل / المنشأ")}
                 </th>
                 <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
-                  الحالة
+                  {t("products.status", "الحالة")}
                 </th>
                 <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
                   {t("products.actions")}
@@ -661,7 +662,7 @@ export default function ProductsPage() {
                         onClick={() => navigate(`/products/${p.id}`)}
                         className="font-medium hover:text-primary transition-colors text-start text-sm"
                       >
-                        {getLocalizedValue(p.name, i18n.language) || "بدون اسم"}
+                        {getLocalizedValue(p.name, i18n.language) || t("common.unnamed", "بدون اسم")}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-sm">
@@ -678,6 +679,7 @@ export default function ProductsPage() {
                         p.category?.id || p.category_id || p.categoryId,
                         categories,
                         i18n.language,
+                        t
                       ) ||
                         getLocalizedValue(p.category?.name, i18n.language) ||
                         "-"}
@@ -699,7 +701,7 @@ export default function ProductsPage() {
                             : "bg-muted text-muted-foreground"
                         }
                       >
-                        {Number(p.is_active) ? "مفعل" : "مخفي"}
+                    {Number(p.is_active) ? t("common.active", "مفعل") : t("common.inactive", "مخفي")}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-end">
@@ -753,16 +755,16 @@ export default function ProductsPage() {
                 : t("products.addProduct")}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              أدخل تفاصيل وبيانات المنتج بدقة.
+              {t("products.modalDesc", "أدخل تفاصيل وبيانات المنتج بدقة.")}
             </DialogDescription>
 
             {/* أزرار التبويبات داخل النافذة */}
             <div className="flex gap-4 pt-4 border-b">
               {[
-                { id: "basic", label: "الأساسية" },
-                { id: "details", label: "التفاصيل" },
-                { id: "specs", label: "المواصفات والمميزات" },
-                { id: "images", label: "الصور" },
+                { id: "basic", label: t("products.tabBasic", "الأساسية") },
+                { id: "details", label: t("products.tabDetails", "التفاصيل") },
+                { id: "specs", label: t("products.tabSpecs", "المواصفات والمميزات") },
+                { id: "images", label: t("products.tabImages", "الصور") },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -783,7 +785,7 @@ export default function ProductsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      الاسم (عربي) *
+                      {t("products.nameAr", "الاسم (عربي) *")}
                     </Label>
                     <Input
                       value={form.nameAr}
@@ -795,7 +797,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      الاسم (إنجليزي)
+                      {t("products.nameEn", "الاسم (إنجليزي)")}
                     </Label>
                     <Input
                       value={form.nameEn}
@@ -808,7 +810,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      الاسم (كردي)
+                      {t("products.nameKu", "الاسم (كردي)")}
                     </Label>
                     <Input
                       value={form.nameKu}
@@ -822,7 +824,7 @@ export default function ProductsPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">السعر ($)</Label>
+                    <Label className="text-xs font-semibold">{t("products.priceLabel", "السعر ($)")}</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -835,26 +837,27 @@ export default function ProductsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">القسم *</Label>
+                    <Label className="text-xs font-semibold">{t("products.categoryLabel", "القسم *")}</Label>
                     <CategoryTreeSelect
                       categories={categories}
                       value={form.categoryId}
                       onChange={(v: string) => setForm({ ...form, categoryId: v })}
-                      placeholder="اختر القسم"
+                      placeholder={t("products.selectCategory", "اختر القسم")}
                       i18n={i18n}
+                      t={t}
                       showAllOption={false}
                     />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      العلامة التجارية *
+                      {t("products.brandLabel", "العلامة التجارية *")}
                     </Label>
                     <Select
                       value={form.brandId}
                       onValueChange={(v) => setForm({ ...form, brandId: v })}
                     >
                       <SelectTrigger className="bg-white shadow-sm">
-                        <SelectValue placeholder="اختر العلامة التجارية" />
+                        <SelectValue placeholder={t("products.selectBrand", "اختر العلامة التجارية")} />
                       </SelectTrigger>
                       <SelectContent>
                         {brands.map((b) => (
@@ -880,12 +883,12 @@ export default function ProductsPage() {
                     htmlFor="is_active"
                     className="cursor-pointer text-sm font-bold text-gray-800"
                   >
-                    إظهار المنتج (تفعيل)
+                      {t("products.showProduct", "إظهار المنتج (تفعيل)")}
                   </Label>
                   <span className="text-xs text-muted-foreground ltr:ml-auto rtl:mr-auto bg-gray-100 px-2 py-1 rounded">
                     {form.isActive
-                      ? "المنتج سيظهر للعملاء في المتجر"
-                      : "المنتج سيكون مخفياً عن العملاء"}
+                        ? t("products.showProductDesc", "المنتج سيظهر للعملاء في المتجر")
+                        : t("products.hideProductDesc", "المنتج سيكون مخفياً عن العملاء")}
                   </span>
                 </div>
               </div>
@@ -897,7 +900,7 @@ export default function ProductsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      رقم الموديل (Model Number)
+                      {t("products.modelNumberLabel", "رقم الموديل (Model Number)")}
                     </Label>
                     <Input
                       value={form.modelNumber}
@@ -910,7 +913,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      بلد المنشأ (Origin Country)
+                      {t("products.originCountryLabel", "بلد المنشأ (Origin Country)")}
                     </Label>
                     <Input
                       value={form.originCountry}
@@ -924,7 +927,7 @@ export default function ProductsPage() {
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      الوصف (عربي)
+                      {t("products.descAr", "الوصف (عربي)")}
                     </Label>
                     <textarea
                       className="flex min-h-[100px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
@@ -936,7 +939,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      الوصف (إنجليزي)
+                      {t("products.descEn", "الوصف (إنجليزي)")}
                     </Label>
                     <textarea
                       className="flex min-h-[100px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-left"
@@ -949,7 +952,7 @@ export default function ProductsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      الوصف (كردي)
+                      {t("products.descKu", "الوصف (كردي)")}
                     </Label>
                     <textarea
                       className="flex min-h-[100px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-left"
@@ -971,7 +974,7 @@ export default function ProductsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center bg-gray-100 p-3 rounded-lg border">
                     <Label className="text-sm font-bold text-gray-800">
-                      المميزات السريعة (Features)
+                        {t("products.featuresTitle", "المميزات السريعة (Features)")}
                     </Label>
                     <Button
                       variant="outline"
@@ -987,13 +990,13 @@ export default function ProductsPage() {
                         })
                       }
                     >
-                      <Plus className="h-3.5 w-3.5 ml-1" /> إضافة ميزة
+                        <Plus className="h-3.5 w-3.5 ml-1" /> {t("products.addFeature", "إضافة ميزة")}
                     </Button>
                   </div>
                   <div className="space-y-3">
                     {form.features.length === 0 && (
                       <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
-                        لم يتم إضافة أي ميزات بعد
+                          {t("products.noFeatures", "لم يتم إضافة أي ميزات بعد")}
                       </div>
                     )}
                     {form.features.map((f, i) => (
@@ -1002,7 +1005,7 @@ export default function ProductsPage() {
                         className="flex items-center gap-2 bg-white p-2 rounded-lg border shadow-sm group"
                       >
                         <Input
-                          placeholder="عربي"
+                          placeholder={t("products.arabic", "عربي")}
                           value={f.ar}
                           onChange={(e) => {
                             const n = [...form.features];
@@ -1011,7 +1014,7 @@ export default function ProductsPage() {
                           }}
                         />
                         <Input
-                          placeholder="English"
+                          placeholder={t("products.english", "English")}
                           dir="ltr"
                           value={f.en}
                           onChange={(e) => {
@@ -1021,7 +1024,7 @@ export default function ProductsPage() {
                           }}
                         />
                         <Input
-                          placeholder="کوردی"
+                          placeholder={t("products.kurdish", "کوردی")}
                           dir="ltr"
                           value={f.ku}
                           onChange={(e) => {
@@ -1051,7 +1054,7 @@ export default function ProductsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center bg-gray-100 p-3 rounded-lg border">
                     <Label className="text-sm font-bold text-gray-800">
-                      المواصفات الفنية (Specifications)
+                        {t("products.specsTitle", "المواصفات الفنية (Specifications)")}
                     </Label>
                     <Button
                       variant="outline"
@@ -1071,13 +1074,13 @@ export default function ProductsPage() {
                         })
                       }
                     >
-                      <Plus className="h-3.5 w-3.5 ml-1" /> إضافة مواصفة
+                        <Plus className="h-3.5 w-3.5 ml-1" /> {t("products.addSpec", "إضافة مواصفة")}
                     </Button>
                   </div>
                   <div className="space-y-3">
                     {form.specifications.length === 0 && (
                       <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
-                        لم يتم إضافة أي مواصفات فنية بعد
+                          {t("products.noSpecs", "لم يتم إضافة أي مواصفات فنية بعد")}
                       </div>
                     )}
                     {form.specifications.map((s, i) => (
@@ -1099,10 +1102,10 @@ export default function ProductsPage() {
                         </Button>
                         <div className="flex items-center gap-3 pl-12">
                           <span className="text-xs font-bold text-gray-500 w-16 shrink-0 bg-gray-50 px-2 py-1 rounded text-center border">
-                            المجموعة
+                            {t("products.specGroup", "المجموعة")}
                           </span>
                           <Input
-                            placeholder="عربي"
+                            placeholder={t("products.arabic", "عربي")}
                             value={s.group_name.ar}
                             onChange={(e) => {
                               const n = [...form.specifications];
@@ -1117,7 +1120,7 @@ export default function ProductsPage() {
                             }}
                           />
                           <Input
-                            placeholder="English"
+                            placeholder={t("products.english", "English")}
                             dir="ltr"
                             value={s.group_name.en}
                             onChange={(e) => {
@@ -1133,7 +1136,7 @@ export default function ProductsPage() {
                             }}
                           />
                           <Input
-                            placeholder="کوردی"
+                            placeholder={t("products.kurdish", "کوردی")}
                             dir="ltr"
                             value={s.group_name.ku}
                             onChange={(e) => {
@@ -1151,10 +1154,10 @@ export default function ProductsPage() {
                         </div>
                         <div className="flex items-center gap-3 pl-12">
                           <span className="text-xs font-bold text-gray-500 w-16 shrink-0 bg-gray-50 px-2 py-1 rounded text-center border">
-                            اسم الصفة
+                            {t("products.specName", "اسم الصفة")}
                           </span>
                           <Input
-                            placeholder="عربي"
+                            placeholder={t("products.arabic", "عربي")}
                             value={s.spec_key.ar}
                             onChange={(e) => {
                               const n = [...form.specifications];
@@ -1169,7 +1172,7 @@ export default function ProductsPage() {
                             }}
                           />
                           <Input
-                            placeholder="English"
+                            placeholder={t("products.english", "English")}
                             dir="ltr"
                             value={s.spec_key.en}
                             onChange={(e) => {
@@ -1185,7 +1188,7 @@ export default function ProductsPage() {
                             }}
                           />
                           <Input
-                            placeholder="کوردی"
+                            placeholder={t("products.kurdish", "کوردی")}
                             dir="ltr"
                             value={s.spec_key.ku}
                             onChange={(e) => {
@@ -1203,10 +1206,10 @@ export default function ProductsPage() {
                         </div>
                         <div className="flex items-center gap-3 pl-12">
                           <span className="text-xs font-bold text-gray-500 w-16 shrink-0 bg-gray-50 px-2 py-1 rounded text-center border">
-                            القيمة
+                            {t("products.specValue", "القيمة")}
                           </span>
                           <Input
-                            placeholder="عربي"
+                            placeholder={t("products.arabic", "عربي")}
                             value={s.spec_value.ar}
                             onChange={(e) => {
                               const n = [...form.specifications];
@@ -1221,7 +1224,7 @@ export default function ProductsPage() {
                             }}
                           />
                           <Input
-                            placeholder="English"
+                            placeholder={t("products.english", "English")}
                             dir="ltr"
                             value={s.spec_value.en}
                             onChange={(e) => {
@@ -1237,7 +1240,7 @@ export default function ProductsPage() {
                             }}
                           />
                           <Input
-                            placeholder="کوردی"
+                            placeholder={t("products.kurdish", "کوردی")}
                             dir="ltr"
                             value={s.spec_value.ku}
                             onChange={(e) => {
@@ -1269,11 +1272,10 @@ export default function ProductsPage() {
                       <ImageIcon className="h-6 w-6" />
                     </div>
                     <Label className="text-base font-bold cursor-pointer hover:text-primary">
-                      رفع صور المنتج
+                          {t("products.uploadImages", "رفع صور المنتج")}
                     </Label>
                     <p className="text-xs text-muted-foreground text-center max-w-sm">
-                      يمكنك تحديد عدة صور دفعة واحدة. الصورة الأولى ستكون هي
-                      الصورة الرئيسية للمنتج.
+                          {t("products.uploadImagesDesc", "يمكنك تحديد عدة صور دفعة واحدة. الصورة الأولى ستكون هي الصورة الرئيسية للمنتج.")}
                     </p>
                     <Input
                       type="file"
@@ -1291,7 +1293,7 @@ export default function ProductsPage() {
                 {form.images.length > 0 && (
                   <div className="bg-white p-5 rounded-xl border shadow-sm">
                     <h4 className="text-sm font-bold mb-4">
-                      الصور المحددة ({form.images.length})
+                          {t("products.selectedImages", "الصور المحددة")} ({form.images.length})
                     </h4>
                     <div className="flex flex-wrap gap-4">
                       {form.images.map((img, i) => (
@@ -1301,7 +1303,7 @@ export default function ProductsPage() {
                         >
                           {i === 0 && (
                             <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-primary z-10 px-2 py-0.5">
-                              الرئيسية
+                                  {t("products.mainImage", "الرئيسية")}
                             </Badge>
                           )}
                           <img
@@ -1347,7 +1349,7 @@ export default function ProductsPage() {
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />{" "}
-                  جاري الحفظ...
+                      {t("common.saving", "جاري الحفظ...")}
                 </span>
               ) : (
                 t("common.save")

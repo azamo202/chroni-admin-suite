@@ -54,7 +54,7 @@ export default function BrandsPage() {
 
   const handleSubmit = async () => {
     if (!form.name.trim()) {
-      toast.error("يرجى إدخال اسم العلامة التجارية");
+      toast.error(t('brands.enterName', "يرجى إدخال اسم العلامة التجارية"));
       return;
     }
 
@@ -84,7 +84,7 @@ export default function BrandsPage() {
       toast.success(t('brands.brandDeleted'));
       queryClient.invalidateQueries({ queryKey: ['brands-list'] }); // إخبار React Query بإعادة الجلب بذكاء
     } else {
-      toast.error(response.message || 'فشل حذف العلامة التجارية');
+      toast.error(response.message || t('brands.deleteFailed', 'فشل حذف العلامة التجارية'));
     }
     
     setDeleteId(null);
@@ -122,7 +122,7 @@ export default function BrandsPage() {
                     {b.logo ? (
                       <img src={b.logo} alt={b.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border shadow-sm" />
                     ) : (
-                      <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center text-[10px] text-muted-foreground font-medium">بدون شعار</div>
+                    <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center text-[10px] text-muted-foreground font-medium">{t('brands.noLogo', 'بدون شعار')}</div>
                     )}
                   </td>
                   <td className="px-4 py-3.5 font-medium text-gray-800">{b.name}</td>
@@ -150,7 +150,7 @@ export default function BrandsPage() {
         <div className="space-y-4">
           <div className="space-y-1.5 text-start">
             <Label className="text-xs font-medium">{t('brands.name')}</Label>
-            <Input className="h-9" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="أدخل اسم العلامة التجارية" />
+            <Input className="h-9" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder={t('brands.enterNamePlaceholder', "أدخل اسم العلامة التجارية")} />
           </div>
           <div className="space-y-1.5 text-start">
             <Label className="text-xs font-medium">{t('brands.uploadLogo')}</Label>
@@ -161,7 +161,7 @@ export default function BrandsPage() {
               onChange={(e) => setForm({ ...form, logo: e.target.files?.[0] || null })} 
             />
             {editing && !form.logo && editing.logo && (
-              <p className="text-[10px] text-muted-foreground mt-1">اترك الحقل فارغاً للاحتفاظ بالشعار الحالي.</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{t('brands.keepLogo', 'اترك الحقل فارغاً للاحتفاظ بالشعار الحالي.')}</p>
             )}
           </div>
         </div>

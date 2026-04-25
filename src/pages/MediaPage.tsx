@@ -37,7 +37,7 @@ const parseI18n = (field: any) => {
 };
 
 export default function MediaPage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<'centers' | 'videos' | 'downloads'>('centers');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -151,10 +151,10 @@ export default function MediaPage() {
       : await createCenter(payload);
 
     if (res.success) {
-      toast.success(editingCenter ? 'تم تحديث المركز بنجاح' : 'تم إضافة المركز بنجاح');
+      toast.success(editingCenter ? t('media.centerUpdated', 'تم تحديث المركز بنجاح') : t('media.centerAdded', 'تم إضافة المركز بنجاح'));
       setIsCenterModalOpen(false);
     } else {
-      toast.error(res.message || 'حدث خطأ في العملية');
+      toast.error(res.message || t('common.error', 'حدث خطأ في العملية'));
     }
     setIsSubmitting(false);
   };
@@ -162,8 +162,8 @@ export default function MediaPage() {
   const handleDeleteCenter = async () => {
     if (!deleteCenterId) return;
     const res = await deleteCenter(deleteCenterId);
-    if (res.success) toast.success('تم حذف المركز بنجاح');
-    else toast.error('فشل حذف المركز');
+    if (res.success) toast.success(t('media.centerDeleted', 'تم حذف المركز بنجاح'));
+    else toast.error(t('media.centerDeleteFailed', 'فشل حذف المركز'));
     setDeleteCenterId(null);
   };
 
@@ -198,10 +198,10 @@ export default function MediaPage() {
       : await createVideo(payload);
 
     if (res.success) {
-      toast.success(editingVideo ? 'تم تحديث الفيديو بنجاح' : 'تم إضافة الفيديو بنجاح');
+      toast.success(editingVideo ? t('media.videoUpdated', 'تم تحديث الفيديو بنجاح') : t('media.videoAdded', 'تم إضافة الفيديو بنجاح'));
       setIsVideoModalOpen(false);
     } else {
-      toast.error(res.message || 'حدث خطأ في العملية');
+      toast.error(res.message || t('common.error', 'حدث خطأ في العملية'));
     }
     setIsSubmitting(false);
   };
@@ -209,8 +209,8 @@ export default function MediaPage() {
   const handleDeleteVideo = async () => {
     if (!deleteVideoId) return;
     const res = await deleteVideo(deleteVideoId);
-    if (res.success) toast.success('تم حذف الفيديو بنجاح');
-    else toast.error('فشل حذف الفيديو');
+    if (res.success) toast.success(t('media.videoDeleted', 'تم حذف الفيديو بنجاح'));
+    else toast.error(t('media.videoDeleteFailed', 'فشل حذف الفيديو'));
     setDeleteVideoId(null);
   };
 
@@ -246,10 +246,10 @@ export default function MediaPage() {
       : await createDownload(formData);
 
     if (res.success) {
-      toast.success(editingDownload ? 'تم تحديث الملف بنجاح' : 'تم إضافة الملف بنجاح');
+      toast.success(editingDownload ? t('media.downloadUpdated', 'تم تحديث الملف بنجاح') : t('media.downloadAdded', 'تم إضافة الملف بنجاح'));
       setIsDownloadModalOpen(false);
     } else {
-      toast.error(res.message || 'حدث خطأ في العملية');
+      toast.error(res.message || t('common.error', 'حدث خطأ في العملية'));
     }
     setIsSubmitting(false);
   };
@@ -257,37 +257,37 @@ export default function MediaPage() {
   const handleDeleteDownload = async () => {
     if (!deleteDownloadId) return;
     const res = await deleteDownload(deleteDownloadId);
-    if (res.success) toast.success('تم حذف الملف بنجاح');
-    else toast.error('فشل حذف الملف');
+    if (res.success) toast.success(t('media.downloadDeleted', 'تم حذف الملف بنجاح'));
+    else toast.error(t('media.downloadDeleteFailed', 'فشل حذف الملف'));
     setDeleteDownloadId(null);
   };
 
   const tabs = [
-    { id: 'centers', label: 'مراكز الصيانة', icon: <Wrench className="h-4 w-4" /> },
-    { id: 'videos', label: 'فيديوهات الدعم', icon: <Video className="h-4 w-4" /> },
-    { id: 'downloads', label: 'الملفات والكتالوجات', icon: <Download className="h-4 w-4" /> }
+    { id: 'centers', label: t('media.tabs.centers', 'مراكز الصيانة'), icon: <Wrench className="h-4 w-4" /> },
+    { id: 'videos', label: t('media.tabs.videos', 'فيديوهات الدعم'), icon: <Video className="h-4 w-4" /> },
+    { id: 'downloads', label: t('media.tabs.downloads', 'الملفات والكتالوجات'), icon: <Download className="h-4 w-4" /> }
   ];
 
   return (
     <>
       <PageHeader 
-        title="الدعم والضمان" 
-        description="إدارة وعرض مراكز الصيانة، الفيديوهات التعليمية، وملفات التحميل" 
+        title={t('media.title', 'الدعم والضمان')} 
+        description={t('media.description', 'إدارة وعرض مراكز الصيانة، الفيديوهات التعليمية، وملفات التحميل')} 
         actions={
           <>
             {activeTab === 'centers' && (
               <Button onClick={openAddCenter} size="sm" className="gap-1.5 h-8">
-                <Plus className="h-3.5 w-3.5" /> إضافة مركز
+                <Plus className="h-3.5 w-3.5" /> {t('media.addCenter', 'إضافة مركز')}
               </Button>
             )}
             {activeTab === 'videos' && (
               <Button onClick={openAddVideo} size="sm" className="gap-1.5 h-8">
-                <Plus className="h-3.5 w-3.5" /> إضافة فيديو
+                <Plus className="h-3.5 w-3.5" /> {t('media.addVideo', 'إضافة فيديو')}
               </Button>
             )}
             {activeTab === 'downloads' && (
               <Button onClick={openAddDownload} size="sm" className="gap-1.5 h-8">
-                <Plus className="h-3.5 w-3.5" /> إضافة ملف
+                <Plus className="h-3.5 w-3.5" /> {t('media.addDownload', 'إضافة ملف')}
               </Button>
             )}
           </>
@@ -316,9 +316,9 @@ export default function MediaPage() {
           <Search className="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground ltr:left-3 rtl:right-3" />
           <Input 
             placeholder={
-              activeTab === 'centers' ? "بحث باسم المركز، الهاتف، أو العنوان..." : 
-              activeTab === 'videos' ? "بحث بعنوان الفيديو..." : 
-              "بحث باسم الملف..."
+              activeTab === 'centers' ? t('media.searchCenters', "بحث باسم المركز، الهاتف، أو العنوان...") : 
+              activeTab === 'videos' ? t('media.searchVideos', "بحث بعنوان الفيديو...") : 
+              t('media.searchDownloads', "بحث باسم الملف...")
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -333,24 +333,24 @@ export default function MediaPage() {
             <thead className="bg-muted/40 border-b">
               {activeTab === 'centers' && (
                 <tr>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">اسم المركز</th>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">رقم الهاتف</th>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">العنوان</th>
-                  <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">الإجراءات</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.centerName', 'اسم المركز')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.phone', 'رقم الهاتف')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.address', 'العنوان')}</th>
+                  <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.actions', 'الإجراءات')}</th>
                 </tr>
               )}
               {activeTab === 'videos' && (
                 <tr>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">عنوان الفيديو</th>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">الرابط</th>
-                  <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">الإجراءات</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.videoTitle', 'عنوان الفيديو')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.link', 'الرابط')}</th>
+                  <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.actions', 'الإجراءات')}</th>
                 </tr>
               )}
               {activeTab === 'downloads' && (
                 <tr>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">عنوان الملف</th>
-                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">رابط التحميل</th>
-                  <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">الإجراءات</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.fileName', 'عنوان الملف')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.downloadLink', 'رابط التحميل')}</th>
+                  <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.actions', 'الإجراءات')}</th>
                 </tr>
               )}
             </thead>
@@ -361,10 +361,10 @@ export default function MediaPage() {
                 <>
                   {/* مراكز الصيانة */}
                   {activeTab === 'centers' && (
-                filteredCenters.length === 0 ? <tr><td colSpan={4}><EmptyState message="لا توجد مراكز صيانة مطابقة للبحث" /></td></tr> :
+                filteredCenters.length === 0 ? <tr><td colSpan={4}><EmptyState message={t('media.noCentersFound', 'لا توجد مراكز صيانة مطابقة للبحث')} /></td></tr> :
                 filteredCenters.map((center, i) => (
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(center.name, i18n.language) || center.name || 'بدون اسم'}</td>
+                        <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(center.name, i18n.language) || center.name || t('common.unnamed', 'بدون اسم')}</td>
                         <td className="px-4 py-3.5 text-muted-foreground text-start">
                           <span dir="ltr">{center.phone || center.phone_number || '-'}</span>
                         </td>
@@ -373,9 +373,9 @@ export default function MediaPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-36">
-                              <DropdownMenuItem onClick={() => openEditCenter(center)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />تعديل</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditCenter(center)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.edit', 'تعديل')}</DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setDeleteCenterId(center.id)} className="text-destructive focus:bg-red-50 focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />حذف</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setDeleteCenterId(center.id)} className="text-destructive focus:bg-red-50 focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.delete', 'حذف')}</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>
@@ -385,22 +385,22 @@ export default function MediaPage() {
 
                   {/* الفيديوهات */}
                   {activeTab === 'videos' && (
-                filteredVideos.length === 0 ? <tr><td colSpan={3}><EmptyState message="لا توجد فيديوهات مطابقة للبحث" /></td></tr> :
+                filteredVideos.length === 0 ? <tr><td colSpan={3}><EmptyState message={t('media.noVideosFound', 'لا توجد فيديوهات مطابقة للبحث')} /></td></tr> :
                 filteredVideos.map((video, i) => (
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(video.title, i18n.language) || video.title || 'بدون عنوان'}</td>
+                        <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(video.title, i18n.language) || video.title || t('common.unnamed', 'بدون عنوان')}</td>
                         <td className="px-4 py-3.5 text-start">
                           <a href={video.youtube_url || video.url || video.video_url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">
-                            عرض الفيديو
+                            {t('media.watchVideo', 'عرض الفيديو')}
                           </a>
                         </td>
                         <td className="px-4 py-3.5 text-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-36">
-                              <DropdownMenuItem onClick={() => openEditVideo(video)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />تعديل</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditVideo(video)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.edit', 'تعديل')}</DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setDeleteVideoId(video.id)} className="text-destructive focus:bg-red-50 focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />حذف</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setDeleteVideoId(video.id)} className="text-destructive focus:bg-red-50 focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.delete', 'حذف')}</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>
@@ -410,20 +410,20 @@ export default function MediaPage() {
 
                   {/* الملفات */}
                   {activeTab === 'downloads' && (
-                filteredDownloads.length === 0 ? <tr><td colSpan={3}><EmptyState message="لا توجد ملفات مطابقة للبحث" /></td></tr> :
+                filteredDownloads.length === 0 ? <tr><td colSpan={3}><EmptyState message={t('media.noDownloadsFound', 'لا توجد ملفات مطابقة للبحث')} /></td></tr> :
                 filteredDownloads.map((file, i) => (
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(file.title || file.name, i18n.language) || file.title || 'بدون اسم'}</td>
+                        <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(file.title || file.name, i18n.language) || file.title || t('common.unnamed', 'بدون اسم')}</td>
                         <td className="px-4 py-3.5">
-                          <a href={file.file_url || file.url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">تحميل الملف</a>
+                          <a href={file.file_url || file.url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">{t('media.downloadFile', 'تحميل الملف')}</a>
                         </td>
                         <td className="px-4 py-3.5 text-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-36">
-                              <DropdownMenuItem onClick={() => openEditDownload(file)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />تعديل</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditDownload(file)}><Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.edit', 'تعديل')}</DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setDeleteDownloadId(file.id)} className="text-destructive focus:bg-red-50 focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />حذف</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setDeleteDownloadId(file.id)} className="text-destructive focus:bg-red-50 focus:text-destructive"><Trash2 className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />{t('common.delete', 'حذف')}</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>
@@ -438,60 +438,60 @@ export default function MediaPage() {
       </div>
 
       {/* نوافذ الإضافة والتعديل */}
-      <FormModal open={isCenterModalOpen} onOpenChange={setIsCenterModalOpen} title={editingCenter ? 'تعديل مركز الصيانة' : 'إضافة مركز صيانة'} onSubmit={handleCenterSubmit} disabled={isSubmitting}>
+      <FormModal open={isCenterModalOpen} onOpenChange={setIsCenterModalOpen} title={editingCenter ? t('media.editCenter', 'تعديل مركز الصيانة') : t('media.addCenterTitle', 'إضافة مركز صيانة')} onSubmit={handleCenterSubmit} disabled={isSubmitting}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1.5"><Label className="text-xs font-medium">اسم المركز (عربي)</Label><Input className="h-9" value={centerForm.nameAr} onChange={e => setCenterForm({...centerForm, nameAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">اسم المركز (إنجليزي)</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameEn} onChange={e => setCenterForm({...centerForm, nameEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">اسم المركز (كردي)</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameKu} onChange={e => setCenterForm({...centerForm, nameKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameAr', 'اسم المركز (عربي)')}</Label><Input className="h-9" value={centerForm.nameAr} onChange={e => setCenterForm({...centerForm, nameAr: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameEn', 'اسم المركز (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameEn} onChange={e => setCenterForm({...centerForm, nameEn: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameKu', 'اسم المركز (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameKu} onChange={e => setCenterForm({...centerForm, nameKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">رقم الهاتف</Label>
+            <Label className="text-xs font-medium">{t('media.phone', 'رقم الهاتف')}</Label>
             <Input className="h-9 text-left" dir="ltr" value={centerForm.phone} onChange={e => setCenterForm({...centerForm, phone: e.target.value})} required />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1.5"><Label className="text-xs font-medium">العنوان (عربي)</Label><Input className="h-9" value={centerForm.addressAr} onChange={e => setCenterForm({...centerForm, addressAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">العنوان (إنجليزي)</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressEn} onChange={e => setCenterForm({...centerForm, addressEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">العنوان (كردي)</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressKu} onChange={e => setCenterForm({...centerForm, addressKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressAr', 'العنوان (عربي)')}</Label><Input className="h-9" value={centerForm.addressAr} onChange={e => setCenterForm({...centerForm, addressAr: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressEn', 'العنوان (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressEn} onChange={e => setCenterForm({...centerForm, addressEn: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressKu', 'العنوان (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressKu} onChange={e => setCenterForm({...centerForm, addressKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">رابط الموقع (Google Maps)</Label>
+            <Label className="text-xs font-medium">{t('media.locationLink', 'رابط الموقع (Google Maps)')}</Label>
             <Input className="h-9 text-left" type="url" value={centerForm.locationLink} onChange={e => setCenterForm({...centerForm, locationLink: e.target.value})} dir="ltr" />
           </div>
         </div>
       </FormModal>
 
-      <FormModal open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen} title={editingVideo ? 'تعديل فيديو' : 'إضافة فيديو'} onSubmit={handleVideoSubmit} disabled={isSubmitting}>
+      <FormModal open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen} title={editingVideo ? t('media.editVideo', 'تعديل فيديو') : t('media.addVideoTitle', 'إضافة فيديو')} onSubmit={handleVideoSubmit} disabled={isSubmitting}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1.5"><Label className="text-xs font-medium">عنوان الفيديو (عربي)</Label><Input className="h-9" value={videoForm.titleAr} onChange={e => setVideoForm({...videoForm, titleAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">عنوان الفيديو (إنجليزي)</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleEn} onChange={e => setVideoForm({...videoForm, titleEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">عنوان الفيديو (كردي)</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleKu} onChange={e => setVideoForm({...videoForm, titleKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleAr', 'عنوان الفيديو (عربي)')}</Label><Input className="h-9" value={videoForm.titleAr} onChange={e => setVideoForm({...videoForm, titleAr: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleEn', 'عنوان الفيديو (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleEn} onChange={e => setVideoForm({...videoForm, titleEn: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleKu', 'عنوان الفيديو (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleKu} onChange={e => setVideoForm({...videoForm, titleKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">رابط يوتيوب (YouTube URL)</Label>
+            <Label className="text-xs font-medium">{t('media.youtubeUrl', 'رابط يوتيوب (YouTube URL)')}</Label>
             <Input className="h-9 text-left" type="url" placeholder="https://www.youtube.com/watch?v=..." value={videoForm.youtubeUrl} onChange={e => setVideoForm({...videoForm, youtubeUrl: e.target.value})} dir="ltr" required />
           </div>
         </div>
       </FormModal>
 
-      <FormModal open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen} title={editingDownload ? 'تعديل ملف/كتالوج' : 'إضافة ملف/كتالوج'} onSubmit={handleDownloadSubmit} disabled={isSubmitting}>
+      <FormModal open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen} title={editingDownload ? t('media.editDownload', 'تعديل ملف/كتالوج') : t('media.addDownloadTitle', 'إضافة ملف/كتالوج')} onSubmit={handleDownloadSubmit} disabled={isSubmitting}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1.5"><Label className="text-xs font-medium">عنوان الملف (عربي)</Label><Input className="h-9" value={downloadForm.titleAr} onChange={e => setDownloadForm({...downloadForm, titleAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">عنوان الملف (إنجليزي)</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleEn} onChange={e => setDownloadForm({...downloadForm, titleEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">عنوان الملف (كردي)</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleKu} onChange={e => setDownloadForm({...downloadForm, titleKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameAr', 'عنوان الملف (عربي)')}</Label><Input className="h-9" value={downloadForm.titleAr} onChange={e => setDownloadForm({...downloadForm, titleAr: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameEn', 'عنوان الملف (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleEn} onChange={e => setDownloadForm({...downloadForm, titleEn: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameKu', 'عنوان الملف (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleKu} onChange={e => setDownloadForm({...downloadForm, titleKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">رفع الملف (PDF, DOC, الخ)</Label>
+            <Label className="text-xs font-medium">{t('media.uploadFile', 'رفع الملف (PDF, DOC, الخ)')}</Label>
             <Input type="file" className="cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all h-9" onChange={e => setDownloadForm({...downloadForm, file: e.target.files?.[0] || null})} />
           </div>
         </div>
       </FormModal>
 
-      <ConfirmDialog open={!!deleteCenterId} onOpenChange={(o) => !o && setDeleteCenterId(null)} title="حذف مركز الصيانة" description="هل أنت متأكد من رغبتك في حذف هذا المركز؟ لا يمكن التراجع عن هذا الإجراء." onConfirm={handleDeleteCenter} />
-      <ConfirmDialog open={!!deleteVideoId} onOpenChange={(o) => !o && setDeleteVideoId(null)} title="حذف الفيديو" description="هل أنت متأكد من رغبتك في حذف هذا الفيديو؟ لا يمكن التراجع عن هذا الإجراء." onConfirm={handleDeleteVideo} />
-      <ConfirmDialog open={!!deleteDownloadId} onOpenChange={(o) => !o && setDeleteDownloadId(null)} title="حذف الملف" description="هل أنت متأكد من رغبتك في حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء." onConfirm={handleDeleteDownload} />
+      <ConfirmDialog open={!!deleteCenterId} onOpenChange={(o) => !o && setDeleteCenterId(null)} title={t('media.deleteCenterTitle', 'حذف مركز الصيانة')} description={t('media.deleteCenterConfirm', 'هل أنت متأكد من رغبتك في حذف هذا المركز؟ لا يمكن التراجع عن هذا الإجراء.')} onConfirm={handleDeleteCenter} />
+      <ConfirmDialog open={!!deleteVideoId} onOpenChange={(o) => !o && setDeleteVideoId(null)} title={t('media.deleteVideoTitle', 'حذف الفيديو')} description={t('media.deleteVideoConfirm', 'هل أنت متأكد من رغبتك في حذف هذا الفيديو؟ لا يمكن التراجع عن هذا الإجراء.')} onConfirm={handleDeleteVideo} />
+      <ConfirmDialog open={!!deleteDownloadId} onOpenChange={(o) => !o && setDeleteDownloadId(null)} title={t('media.deleteDownloadTitle', 'حذف الملف')} description={t('media.deleteDownloadConfirm', 'هل أنت متأكد من رغبتك في حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء.')} onConfirm={handleDeleteDownload} />
     </>
   );
 }
