@@ -1,13 +1,14 @@
 {
   "sidebar": {
     "dashboard": "لوحة التحكم",
+    "homeSections": "أقسام الرئيسية",
     "products": "المنتجات",
     "categories": "الأقسام",
     "brands": "العلامات التجارية",
     "media": "صفحة التواصل والضمان",
     "admins": "المدراء",
     "settings": "الإعدادات",
-    "catalog": "متجر جراني"
+    "catalog": "شركة چراني"
   },
   "topbar": {
     "search": "بحث...",

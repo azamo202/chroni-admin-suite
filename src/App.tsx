@@ -5,7 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense } from "react";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import "@/i18n";
+import HomeSectionsPage from "./pages/HomeSectionsPage";
+
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
@@ -17,6 +18,7 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
 const AdminsPage = lazy(() => import("./pages/AdminsPage"));
+
 
 
 const queryClient = new QueryClient();
@@ -80,6 +82,7 @@ const App = () => (
               <Route path="/brands" element={<BrandsPage />} />
               <Route path="/media" element={<MediaPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/home-sections" element={<HomeSectionsPage />} />
             </Route>
             <Route path="*" element={<Suspense fallback={<Loading />}><NotFound /></Suspense>} />
           </Routes>

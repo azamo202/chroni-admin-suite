@@ -13,10 +13,12 @@ import {
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { LayoutTemplate } from "lucide-react"; // أو أي أيقونة تفضلها
 
 const navItems = [
   { key: 'dashboard', icon: LayoutDashboard, path: '/' },
   { key: 'products', icon: Package, path: '/products' },
+  { key: 'homeSections', icon: LayoutTemplate, path: '/home-sections' },
   { key: 'categories', icon: FolderTree, path: '/categories' },
   { key: 'brands', icon: Tag, path: '/brands' },
   { key: 'media', icon: Image, path: '/media' },

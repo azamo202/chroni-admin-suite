@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const [form, setForm] = useState({
-    companyName: 'Chrani Catalog',
+    companyName: 'CHRANI COMPANY',
     contactEmail: 'admin@chrani.com',
     contactPhone: '+964 750 000 0000',
     whatsapp: '+964 750 000 0000',

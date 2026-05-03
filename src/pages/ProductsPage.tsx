@@ -86,9 +86,13 @@ const parseFeatureArray = (field: any) => {
   if (typeof field === "string") {
     try {
       arr = JSON.parse(field);
+      if (typeof arr === "string") arr = JSON.parse(arr); // معالجة التشفير المزدوج (Double Encoding)
     } catch (e) {
       return [];
     }
+  }
+  if (typeof arr === "object" && arr !== null && !Array.isArray(arr)) {
+    arr = Object.values(arr); // معالجة المصفوفات الترابطية القادمة ككائنات من الخادم
   }
   if (!Array.isArray(arr)) return [];
   return arr.map((item: any) =>
@@ -102,6 +106,7 @@ const parseSpecArray = (field: any) => {
   if (typeof field === "string") {
     try {
       arr = JSON.parse(field);
+      if (typeof arr === "string") arr = JSON.parse(arr); // معالجة التشفير المزدوج
     } catch (e) {
       return [];
     }
@@ -109,20 +114,23 @@ const parseSpecArray = (field: any) => {
   const result: any[] = [];
   if (typeof arr === "object" && !Array.isArray(arr) && arr !== null) {
     Object.entries(arr).forEach(([groupName, specs]: [string, any]) => {
-      if (Array.isArray(specs)) {
-        specs.forEach((spec) => {
-          result.push({
-            group_name: parseI18n(groupName),
-            spec_key: parseI18n(spec.key || spec.spec_key || spec.name),
-            spec_value: parseI18n(spec.value || spec.spec_value),
-          });
+      const specsArray = Array.isArray(specs)
+        ? specs
+        : typeof specs === "object" && specs !== null
+          ? Object.values(specs)
+          : [];
+      specsArray.forEach((spec: any) => {
+        result.push({
+          group_name: parseI18n(groupName),
+          spec_key: parseI18n(spec.key || spec.spec_key || spec.name),
+          spec_value: parseI18n(spec.value || spec.spec_value),
         });
-      }
+      });
     });
   } else if (Array.isArray(arr)) {
     arr.forEach((item) => {
       result.push({
-        group_name: parseI18n(item.group_name),
+        group_name: parseI18n(item.group_name || item.group || ""),
         spec_key: parseI18n(item.key || item.spec_key || item.name),
         spec_value: parseI18n(item.value || item.spec_value),
       });
@@ -132,7 +140,12 @@ const parseSpecArray = (field: any) => {
 };
 
 // --- دالة مساعدة لاستخراج مسار القسم كاملاً (مثال: القسم الرئيسي / القسم الفرعي) ---
-const getCategoryPath = (categoryId: any, categories: any[], lang: string, t: any): string => {
+const getCategoryPath = (
+  categoryId: any,
+  categories: any[],
+  lang: string,
+  t: any,
+): string => {
   if (!categoryId || !categories || !Array.isArray(categories)) return "";
   let path: string[] = [];
   const target = String(categoryId);
@@ -141,7 +154,10 @@ const getCategoryPath = (categoryId: any, categories: any[], lang: string, t: an
     for (const cat of cats) {
       const next = [...current, cat];
       if (String(cat.id) === target) {
-        path = next.map((c) => getLocalizedValue(c.name, lang) || t("common.unnamed", "بدون اسم"));
+        path = next.map(
+          (c) =>
+            getLocalizedValue(c.name, lang) || t("common.unnamed", "بدون اسم"),
+        );
         return true;
       }
       if (cat.children && Array.isArray(cat.children)) {
@@ -156,14 +172,23 @@ const getCategoryPath = (categoryId: any, categories: any[], lang: string, t: an
 };
 
 // --- مكون مخصص لاختيار القسم بشكل شجري (Tree Select) باستخدام DropdownMenu ---
-const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, t, disabled = false, showAllOption = true }: any) => {
+const CategoryTreeSelect = ({
+  categories,
+  value,
+  onChange,
+  placeholder,
+  i18n,
+  t,
+  disabled = false,
+  showAllOption = true,
+}: any) => {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleSelect = (id: string) => {
@@ -171,31 +196,41 @@ const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, t,
     setOpen(false);
   };
 
-  const flatten = (cats: any[]): any[] => cats.reduce((acc, cat) => acc.concat(cat, flatten(cat.children || [])), []);
+  const flatten = (cats: any[]): any[] =>
+    cats.reduce((acc, cat) => acc.concat(cat, flatten(cat.children || [])), []);
   const allCats = flatten(categories || []);
-  const selectedCat = allCats.find(c => String(c.id) === String(value));
-  const selectedName = selectedCat ? getLocalizedValue(selectedCat.name, i18n.language) : placeholder;
+  const selectedCat = allCats.find((c) => String(c.id) === String(value));
+  const selectedName = selectedCat
+    ? getLocalizedValue(selectedCat.name, i18n.language)
+    : placeholder;
 
   const renderCategories = (cats: any[], level = 0) => {
-    return cats.map(cat => {
+    return cats.map((cat) => {
       const hasChildren = cat.children && cat.children.length > 0;
       const isExpanded = expanded[cat.id];
       const isSelected = String(cat.id) === String(value);
 
       return (
         <div key={cat.id} className="flex flex-col w-full">
-          <div 
-            className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer transition-colors ${isSelected ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-muted text-gray-700'}`}
-            style={{ paddingRight: level === 0 ? '0.5rem' : `${level * 1.5 + 0.5}rem` }}
+          <div
+            className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer transition-colors ${isSelected ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-gray-700"}`}
+            style={{
+              paddingRight: level === 0 ? "0.5rem" : `${level * 1.5 + 0.5}rem`,
+            }}
             onClick={() => handleSelect(String(cat.id))}
           >
-            <span className="flex-1 text-right truncate">{getLocalizedValue(cat.name, i18n.language) || t("common.unnamed", "بدون اسم")}</span>
+            <span className="flex-1 text-right truncate">
+              {getLocalizedValue(cat.name, i18n.language) ||
+                t("common.unnamed", "بدون اسم")}
+            </span>
             {hasChildren && (
-              <div 
+              <div
                 className="p-1 rounded hover:bg-gray-200 text-gray-500 mr-2 flex items-center justify-center transition-colors"
                 onClick={(e) => toggleExpand(e, cat.id)}
               >
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-0' : 'rotate-90'}`} />
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-0" : "rotate-90"}`}
+                />
               </div>
             )}
           </div>
@@ -212,14 +247,29 @@ const CategoryTreeSelect = ({ categories, value, onChange, placeholder, i18n, t,
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild disabled={disabled}>
-        <Button variant="outline" className={`w-full justify-between font-normal bg-white h-9 px-3 ${disabled ? 'opacity-50' : 'shadow-sm'}`}>
-          <span className="truncate">{value === 'all' || !value ? placeholder : selectedName}</span>
+        <Button
+          variant="outline"
+          className={`w-full justify-between font-normal bg-white h-9 px-3 ${disabled ? "opacity-50" : "shadow-sm"}`}
+        >
+          <span className="truncate">
+            {value === "all" || !value ? placeholder : selectedName}
+          </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-h-72 overflow-y-auto p-0 z-50" style={{ width: 'var(--radix-dropdown-menu-trigger-width)', minWidth: '220px' }} align="start">
+      <DropdownMenuContent
+        className="max-h-72 overflow-y-auto p-0 z-50"
+        style={{
+          width: "var(--radix-dropdown-menu-trigger-width)",
+          minWidth: "220px",
+        }}
+        align="start"
+      >
         {showAllOption && (
-          <div className={`px-3 py-2.5 text-sm cursor-pointer transition-colors border-b ${value === 'all' || !value ? 'bg-primary/5 text-primary font-bold' : 'hover:bg-muted text-gray-700'}`} onClick={() => handleSelect('all')}>
+          <div
+            className={`px-3 py-2.5 text-sm cursor-pointer transition-colors border-b ${value === "all" || !value ? "bg-primary/5 text-primary font-bold" : "hover:bg-muted text-gray-700"}`}
+            onClick={() => handleSelect("all")}
+          >
             {t("products.all", "الكل")}
           </div>
         )}
@@ -285,7 +335,9 @@ export default function ProductsPage() {
     categoryId: "",
     brandId: "",
     modelNumber: "",
-    originCountry: "",
+    originCountryAr: "",
+    originCountryEn: "",
+    originCountryKu: "",
     price: "",
     isActive: true,
     features: [] as any[],
@@ -310,7 +362,11 @@ export default function ProductsPage() {
     ],
     queryFn: async () => {
       // إرسال category_slug كما يتوقعه الباك اند أو إرسال id كبديل أمان
-      const flatten = (cats: any[]): any[] => cats.reduce((acc, cat) => acc.concat(cat, flatten(cat.children || [])), []);
+      const flatten = (cats: any[]): any[] =>
+        cats.reduce(
+          (acc, cat) => acc.concat(cat, flatten(cat.children || [])),
+          [],
+        );
       const allCats = flatten(categories || []);
       const selectedCat = allCats.find((c) => String(c.id) === filterCategory);
       const category_slug = selectedCat?.slug || filterCategory;
@@ -345,6 +401,7 @@ export default function ProductsPage() {
     setEditingProduct(p);
     const name = parseI18n(p.name);
     const desc = parseI18n(p.description);
+    const origin = parseI18n(p.origin_country || p.originCountry);
 
     setForm({
       nameAr: name.ar,
@@ -356,7 +413,9 @@ export default function ProductsPage() {
       categoryId: String(p.category?.id || p.category_id || p.categoryId || ""),
       brandId: String(p.brand?.id || p.brand_id || p.brandId || ""),
       modelNumber: p.model_number || p.modelNumber || "",
-      originCountry: p.origin_country || p.originCountry || "",
+      originCountryAr: origin.ar,
+      originCountryEn: origin.en,
+      originCountryKu: origin.ku,
       price: p.price !== null && p.price !== undefined ? String(p.price) : "",
       isActive: p.is_active !== undefined ? !!Number(p.is_active) : true,
       features: parseFeatureArray(p.features),
@@ -382,6 +441,9 @@ export default function ProductsPage() {
         const full = json.data;
         const fname = parseI18n(full.name);
         const fdesc = parseI18n(full.description);
+        const forigin = parseI18n(full.origin_country || full.originCountry);
+        const parsedFeatures = parseFeatureArray(full.features);
+        const parsedSpecs = parseSpecArray(full.specifications);
         setForm((prev) => ({
           ...prev,
           nameAr: fname.ar || prev.nameAr,
@@ -390,8 +452,13 @@ export default function ProductsPage() {
           descAr: fdesc.ar || prev.descAr,
           descEn: fdesc.en || prev.descEn,
           descKu: fdesc.ku || prev.descKu,
-          features: parseFeatureArray(full.features),
-          specifications: parseSpecArray(full.specifications),
+          originCountryAr: forigin.ar || prev.originCountryAr,
+          originCountryEn: forigin.en || prev.originCountryEn,
+          originCountryKu: forigin.ku || prev.originCountryKu,
+          // نستخدم بيانات المنتج المفرد إذا وجدت، وإلا نحتفظ بما كان موجوداً
+          features: parsedFeatures.length > 0 ? parsedFeatures : prev.features,
+          specifications:
+            parsedSpecs.length > 0 ? parsedSpecs : prev.specifications,
         }));
       }
     } catch (err) {
@@ -430,7 +497,9 @@ export default function ProductsPage() {
     if (form.brandId) formData.append("brand_id", form.brandId);
 
     formData.append("model_number", form.modelNumber);
-    formData.append("origin_country", form.originCountry);
+    formData.append("origin_country[ar]", form.originCountryAr);
+    formData.append("origin_country[en]", form.originCountryEn);
+    formData.append("origin_country[ku]", form.originCountryKu);
     if (form.price) formData.append("price", form.price);
     formData.append("is_active", form.isActive ? "1" : "0");
 
@@ -526,7 +595,7 @@ export default function ProductsPage() {
             }}
             className="h-9 text-sm bg-white"
           />
-                    <Select
+          <Select
             value={filterStatus}
             onValueChange={(v) => {
               setFilterStatus(v);
@@ -534,18 +603,27 @@ export default function ProductsPage() {
             }}
           >
             <SelectTrigger className="h-9 text-sm bg-white">
-              <SelectValue placeholder={t("products.statusFilter", "حالة المنتج")} />
+              <SelectValue
+                placeholder={t("products.statusFilter", "حالة المنتج")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("products.allStatuses", "جميع الحالات")}</SelectItem>
-              <SelectItem value="1">{t("products.active", "مفعل (معروض)")}</SelectItem>
+              <SelectItem value="all">
+                {t("products.allStatuses", "جميع الحالات")}
+              </SelectItem>
+              <SelectItem value="1">
+                {t("products.active", "مفعل (معروض)")}
+              </SelectItem>
               <SelectItem value="0">{t("products.hidden", "مخفي")}</SelectItem>
             </SelectContent>
           </Select>
           <CategoryTreeSelect
             categories={categories}
             value={filterCategory}
-            onChange={(v: string) => { setFilterCategory(v); setPage(1); }}
+            onChange={(v: string) => {
+              setFilterCategory(v);
+              setPage(1);
+            }}
             placeholder={t("products.filterByCategory")}
             i18n={i18n}
             t={t}
@@ -662,7 +740,8 @@ export default function ProductsPage() {
                         onClick={() => navigate(`/products/${p.id}`)}
                         className="font-medium hover:text-primary transition-colors text-start text-sm"
                       >
-                        {getLocalizedValue(p.name, i18n.language) || t("common.unnamed", "بدون اسم")}
+                        {getLocalizedValue(p.name, i18n.language) ||
+                          t("common.unnamed", "بدون اسم")}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-sm">
@@ -679,7 +758,7 @@ export default function ProductsPage() {
                         p.category?.id || p.category_id || p.categoryId,
                         categories,
                         i18n.language,
-                        t
+                        t,
                       ) ||
                         getLocalizedValue(p.category?.name, i18n.language) ||
                         "-"}
@@ -689,7 +768,10 @@ export default function ProductsPage() {
                         {p.model_number || "-"}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        {p.origin_country || ""}
+                        {getLocalizedValue(
+                          p.origin_country || p.originCountry,
+                          i18n.language,
+                        ) || ""}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -701,7 +783,9 @@ export default function ProductsPage() {
                             : "bg-muted text-muted-foreground"
                         }
                       >
-                    {Number(p.is_active) ? t("common.active", "مفعل") : t("common.inactive", "مخفي")}
+                        {Number(p.is_active)
+                          ? t("common.active", "مفعل")
+                          : t("common.inactive", "مخفي")}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-end">
@@ -763,7 +847,10 @@ export default function ProductsPage() {
               {[
                 { id: "basic", label: t("products.tabBasic", "الأساسية") },
                 { id: "details", label: t("products.tabDetails", "التفاصيل") },
-                { id: "specs", label: t("products.tabSpecs", "المواصفات والمميزات") },
+                {
+                  id: "specs",
+                  label: t("products.tabSpecs", "المواصفات والمميزات"),
+                },
                 { id: "images", label: t("products.tabImages", "الصور") },
               ].map((tab) => (
                 <button
@@ -817,14 +904,16 @@ export default function ProductsPage() {
                       onChange={(e) =>
                         setForm({ ...form, nameKu: e.target.value })
                       }
-                      dir="ltr"
-                      className="text-left bg-white shadow-sm"
+                      dir="rtl"
+                      className="text-right bg-white shadow-sm"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">{t("products.priceLabel", "السعر ($)")}</Label>
+                    <Label className="text-xs font-semibold">
+                      {t("products.priceLabel", "السعر ($)")}
+                    </Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -837,11 +926,15 @@ export default function ProductsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">{t("products.categoryLabel", "القسم *")}</Label>
+                    <Label className="text-xs font-semibold">
+                      {t("products.categoryLabel", "القسم *")}
+                    </Label>
                     <CategoryTreeSelect
                       categories={categories}
                       value={form.categoryId}
-                      onChange={(v: string) => setForm({ ...form, categoryId: v })}
+                      onChange={(v: string) =>
+                        setForm({ ...form, categoryId: v })
+                      }
                       placeholder={t("products.selectCategory", "اختر القسم")}
                       i18n={i18n}
                       t={t}
@@ -857,7 +950,12 @@ export default function ProductsPage() {
                       onValueChange={(v) => setForm({ ...form, brandId: v })}
                     >
                       <SelectTrigger className="bg-white shadow-sm">
-                        <SelectValue placeholder={t("products.selectBrand", "اختر العلامة التجارية")} />
+                        <SelectValue
+                          placeholder={t(
+                            "products.selectBrand",
+                            "اختر العلامة التجارية",
+                          )}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {brands.map((b) => (
@@ -883,12 +981,18 @@ export default function ProductsPage() {
                     htmlFor="is_active"
                     className="cursor-pointer text-sm font-bold text-gray-800"
                   >
-                      {t("products.showProduct", "إظهار المنتج (تفعيل)")}
+                    {t("products.showProduct", "إظهار المنتج (تفعيل)")}
                   </Label>
                   <span className="text-xs text-muted-foreground ltr:ml-auto rtl:mr-auto bg-gray-100 px-2 py-1 rounded">
                     {form.isActive
-                        ? t("products.showProductDesc", "المنتج سيظهر للعملاء في المتجر")
-                        : t("products.hideProductDesc", "المنتج سيكون مخفياً عن العملاء")}
+                      ? t(
+                          "products.showProductDesc",
+                          "المنتج سيظهر للعملاء في المتجر",
+                        )
+                      : t(
+                          "products.hideProductDesc",
+                          "المنتج سيكون مخفياً عن العملاء",
+                        )}
                   </span>
                 </div>
               </div>
@@ -897,10 +1001,13 @@ export default function ProductsPage() {
             {/* التبويب الثاني: التفاصيل */}
             {activeTab === "details" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-5">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      {t("products.modelNumberLabel", "رقم الموديل (Model Number)")}
+                      {t(
+                        "products.modelNumberLabel",
+                        "رقم الموديل (Model Number)",
+                      )}
                     </Label>
                     <Input
                       value={form.modelNumber}
@@ -911,16 +1018,44 @@ export default function ProductsPage() {
                       dir="ltr"
                     />
                   </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
-                      {t("products.originCountryLabel", "بلد المنشأ (Origin Country)")}
+                      {t("products.originCountryAr", "بلد المنشأ (عربي)")}
                     </Label>
                     <Input
-                      value={form.originCountry}
+                      value={form.originCountryAr}
                       onChange={(e) =>
-                        setForm({ ...form, originCountry: e.target.value })
+                        setForm({ ...form, originCountryAr: e.target.value })
                       }
                       className="bg-white shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      {t("products.originCountryEn", "بلد المنشأ (إنجليزي)")}
+                    </Label>
+                    <Input
+                      value={form.originCountryEn}
+                      onChange={(e) =>
+                        setForm({ ...form, originCountryEn: e.target.value })
+                      }
+                      dir="ltr"
+                      className="text-left bg-white shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      {t("products.originCountryKu", "بلد المنشأ (كردي)")}
+                    </Label>
+                    <Input
+                      value={form.originCountryKu}
+                      onChange={(e) =>
+                        setForm({ ...form, originCountryKu: e.target.value })
+                      }
+                      dir="rtl"
+                      className="text-right bg-white shadow-sm"
                     />
                   </div>
                 </div>
@@ -955,8 +1090,8 @@ export default function ProductsPage() {
                       {t("products.descKu", "الوصف (كردي)")}
                     </Label>
                     <textarea
-                      className="flex min-h-[100px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-left"
-                      dir="ltr"
+                      className="flex min-h-[100px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-right"
+                      dir="rtl"
                       value={form.descKu}
                       onChange={(e) =>
                         setForm({ ...form, descKu: e.target.value })
@@ -974,7 +1109,10 @@ export default function ProductsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center bg-gray-100 p-3 rounded-lg border">
                     <Label className="text-sm font-bold text-gray-800">
-                        {t("products.featuresTitle", "المميزات السريعة (Features)")}
+                      {t(
+                        "products.featuresTitle",
+                        "المميزات السريعة (Features)",
+                      )}
                     </Label>
                     <Button
                       variant="outline"
@@ -990,13 +1128,14 @@ export default function ProductsPage() {
                         })
                       }
                     >
-                        <Plus className="h-3.5 w-3.5 ml-1" /> {t("products.addFeature", "إضافة ميزة")}
+                      <Plus className="h-3.5 w-3.5 ml-1" />{" "}
+                      {t("products.addFeature", "إضافة ميزة")}
                     </Button>
                   </div>
                   <div className="space-y-3">
                     {form.features.length === 0 && (
                       <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
-                          {t("products.noFeatures", "لم يتم إضافة أي ميزات بعد")}
+                        {t("products.noFeatures", "لم يتم إضافة أي ميزات بعد")}
                       </div>
                     )}
                     {form.features.map((f, i) => (
@@ -1025,7 +1164,8 @@ export default function ProductsPage() {
                         />
                         <Input
                           placeholder={t("products.kurdish", "کوردی")}
-                          dir="ltr"
+                          dir="rtl"
+                          className="text-right"
                           value={f.ku}
                           onChange={(e) => {
                             const n = [...form.features];
@@ -1054,7 +1194,10 @@ export default function ProductsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center bg-gray-100 p-3 rounded-lg border">
                     <Label className="text-sm font-bold text-gray-800">
-                        {t("products.specsTitle", "المواصفات الفنية (Specifications)")}
+                      {t(
+                        "products.specsTitle",
+                        "المواصفات الفنية (Specifications)",
+                      )}
                     </Label>
                     <Button
                       variant="outline"
@@ -1074,13 +1217,17 @@ export default function ProductsPage() {
                         })
                       }
                     >
-                        <Plus className="h-3.5 w-3.5 ml-1" /> {t("products.addSpec", "إضافة مواصفة")}
+                      <Plus className="h-3.5 w-3.5 ml-1" />{" "}
+                      {t("products.addSpec", "إضافة مواصفة")}
                     </Button>
                   </div>
                   <div className="space-y-3">
                     {form.specifications.length === 0 && (
                       <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
-                          {t("products.noSpecs", "لم يتم إضافة أي مواصفات فنية بعد")}
+                        {t(
+                          "products.noSpecs",
+                          "لم يتم إضافة أي مواصفات فنية بعد",
+                        )}
                       </div>
                     )}
                     {form.specifications.map((s, i) => (
@@ -1137,7 +1284,8 @@ export default function ProductsPage() {
                           />
                           <Input
                             placeholder={t("products.kurdish", "کوردی")}
-                            dir="ltr"
+                            dir="rtl"
+                            className="text-right"
                             value={s.group_name.ku}
                             onChange={(e) => {
                               const n = [...form.specifications];
@@ -1189,7 +1337,8 @@ export default function ProductsPage() {
                           />
                           <Input
                             placeholder={t("products.kurdish", "کوردی")}
-                            dir="ltr"
+                            dir="rtl"
+                            className="text-right"
                             value={s.spec_key.ku}
                             onChange={(e) => {
                               const n = [...form.specifications];
@@ -1241,7 +1390,8 @@ export default function ProductsPage() {
                           />
                           <Input
                             placeholder={t("products.kurdish", "کوردی")}
-                            dir="ltr"
+                            dir="rtl"
+                            className="text-right"
                             value={s.spec_value.ku}
                             onChange={(e) => {
                               const n = [...form.specifications];
@@ -1272,10 +1422,13 @@ export default function ProductsPage() {
                       <ImageIcon className="h-6 w-6" />
                     </div>
                     <Label className="text-base font-bold cursor-pointer hover:text-primary">
-                          {t("products.uploadImages", "رفع صور المنتج")}
+                      {t("products.uploadImages", "رفع صور المنتج")}
                     </Label>
                     <p className="text-xs text-muted-foreground text-center max-w-sm">
-                          {t("products.uploadImagesDesc", "يمكنك تحديد عدة صور دفعة واحدة. الصورة الأولى ستكون هي الصورة الرئيسية للمنتج.")}
+                      {t(
+                        "products.uploadImagesDesc",
+                        "يمكنك تحديد عدة صور دفعة واحدة. الصورة الأولى ستكون هي الصورة الرئيسية للمنتج.",
+                      )}
                     </p>
                     <Input
                       type="file"
@@ -1293,7 +1446,8 @@ export default function ProductsPage() {
                 {form.images.length > 0 && (
                   <div className="bg-white p-5 rounded-xl border shadow-sm">
                     <h4 className="text-sm font-bold mb-4">
-                          {t("products.selectedImages", "الصور المحددة")} ({form.images.length})
+                      {t("products.selectedImages", "الصور المحددة")} (
+                      {form.images.length})
                     </h4>
                     <div className="flex flex-wrap gap-4">
                       {form.images.map((img, i) => (
@@ -1303,7 +1457,7 @@ export default function ProductsPage() {
                         >
                           {i === 0 && (
                             <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-primary z-10 px-2 py-0.5">
-                                  {t("products.mainImage", "الرئيسية")}
+                              {t("products.mainImage", "الرئيسية")}
                             </Badge>
                           )}
                           <img
@@ -1349,7 +1503,7 @@ export default function ProductsPage() {
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />{" "}
-                      {t("common.saving", "جاري الحفظ...")}
+                  {t("common.saving", "جاري الحفظ...")}
                 </span>
               ) : (
                 t("common.save")

@@ -443,7 +443,7 @@ export default function MediaPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameAr', 'اسم المركز (عربي)')}</Label><Input className="h-9" value={centerForm.nameAr} onChange={e => setCenterForm({...centerForm, nameAr: e.target.value})} required /></div>
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameEn', 'اسم المركز (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameEn} onChange={e => setCenterForm({...centerForm, nameEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameKu', 'اسم المركز (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameKu} onChange={e => setCenterForm({...centerForm, nameKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameKu', 'اسم المركز (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={centerForm.nameKu} onChange={e => setCenterForm({...centerForm, nameKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.phone', 'رقم الهاتف')}</Label>
@@ -452,7 +452,7 @@ export default function MediaPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressAr', 'العنوان (عربي)')}</Label><Input className="h-9" value={centerForm.addressAr} onChange={e => setCenterForm({...centerForm, addressAr: e.target.value})} required /></div>
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressEn', 'العنوان (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressEn} onChange={e => setCenterForm({...centerForm, addressEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressKu', 'العنوان (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressKu} onChange={e => setCenterForm({...centerForm, addressKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressKu', 'العنوان (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={centerForm.addressKu} onChange={e => setCenterForm({...centerForm, addressKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.locationLink', 'رابط الموقع (Google Maps)')}</Label>
@@ -466,7 +466,7 @@ export default function MediaPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleAr', 'عنوان الفيديو (عربي)')}</Label><Input className="h-9" value={videoForm.titleAr} onChange={e => setVideoForm({...videoForm, titleAr: e.target.value})} required /></div>
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleEn', 'عنوان الفيديو (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleEn} onChange={e => setVideoForm({...videoForm, titleEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleKu', 'عنوان الفيديو (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleKu} onChange={e => setVideoForm({...videoForm, titleKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleKu', 'عنوان الفيديو (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={videoForm.titleKu} onChange={e => setVideoForm({...videoForm, titleKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.youtubeUrl', 'رابط يوتيوب (YouTube URL)')}</Label>
@@ -480,7 +480,7 @@ export default function MediaPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameAr', 'عنوان الملف (عربي)')}</Label><Input className="h-9" value={downloadForm.titleAr} onChange={e => setDownloadForm({...downloadForm, titleAr: e.target.value})} required /></div>
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameEn', 'عنوان الملف (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleEn} onChange={e => setDownloadForm({...downloadForm, titleEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameKu', 'عنوان الملف (كردي)')}</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleKu} onChange={e => setDownloadForm({...downloadForm, titleKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameKu', 'عنوان الملف (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={downloadForm.titleKu} onChange={e => setDownloadForm({...downloadForm, titleKu: e.target.value})} required /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.uploadFile', 'رفع الملف (PDF, DOC, الخ)')}</Label>

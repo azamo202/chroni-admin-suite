@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 import { useProductDetailStore } from '@/store/useProductDetailStore';
+import { useCategoryStore } from '@/store/useCategoryStore';
 
 // تم نقل الدالة المساعدة لخارج المكون لتحسين الأداء (تجنب إعادة تعريفها في كل Render)
 const getLocalizedValue = (data: any, lang: string = 'ar') => {
@@ -29,6 +30,7 @@ export default function ProductDetailPage() {
   
   // استدعاء حالة المتجر
   const { product, loading, error, fetchProduct } = useProductDetailStore();
+  const { categories, fetchCategories } = useCategoryStore();
 
   useEffect(() => {
     if (id) {
@@ -38,6 +40,13 @@ export default function ProductDetailPage() {
       }
     }
   }, [id, fetchProduct, product?.id]);
+
+  // جلب الأقسام إذا لم تكن محملة مسبقاً لاستخراج المسار الكامل (الأساسي / الفرعي)
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+  }, [categories.length, fetchCategories]);
 
   if (loading) {
     return (
@@ -66,7 +75,41 @@ export default function ProductDetailPage() {
 
   const productName = getLocalizedValue(product.name, i18n.language) || t('common.unnamed', 'بدون اسم');
   const productDesc = getLocalizedValue(product.description, i18n.language) || t('products.noDescription', 'لا يوجد وصف متاح لهذا المنتج.');
-  const catName = getLocalizedValue(product.category?.name, i18n.language) || t('products.notSpecified', 'غير محدد');
+  
+  let catName = '';
+  const catId = product.category?.id || product.category_id || product.categoryId;
+  
+  if (catId && categories && categories.length > 0) {
+    const findPath = (cats: any[], current: any[]): string[] | null => {
+      for (const cat of cats) {
+        const next = [...current, cat];
+        if (String(cat.id) === String(catId)) {
+          return next.map(c => getLocalizedValue(c.name, i18n.language) || t('common.unnamed', 'بدون اسم'));
+        }
+        if (cat.children && Array.isArray(cat.children)) {
+          const found = findPath(cat.children, next);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const path = findPath(categories, []);
+    if (path && path.length > 0) {
+      catName = path.join(' / ');
+    }
+  }
+  
+  if (!catName) {
+    if (product.category?.parent) {
+      const parentName = getLocalizedValue(product.category.parent.name, i18n.language);
+      const currentName = getLocalizedValue(product.category.name, i18n.language);
+      catName = parentName ? `${parentName} / ${currentName}` : (currentName || t('products.notSpecified', 'غير محدد'));
+    } else {
+      catName = getLocalizedValue(product.category?.name, i18n.language) || t('products.notSpecified', 'غير محدد');
+    }
+  }
+
   const brandName = product.brand?.name || t('products.notSpecified', 'غير محدد');
   const isActive = !!product.is_active;
   const primaryImage = product.image || (product.images?.length > 0 ? (product.images[0].url || product.images[0].image_path || product.images[0]) : null);
@@ -153,7 +196,7 @@ export default function ProductDetailPage() {
               </div>
               <div>
               <span className="text-xs text-muted-foreground block mb-1">{t('products.originCountryLabel', 'بلد المنشأ')}</span>
-                <span className="font-medium text-gray-800">{product.origin_country || '-'}</span>
+                <span className="font-medium text-gray-800">{getLocalizedValue(product.origin_country, i18n.language) || '-'}</span>
               </div>
             </div>
           </div>

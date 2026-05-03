@@ -189,6 +189,17 @@ export default function CategoriesPage() {
 
   // تسطيح قائمة الأقسام (Flatten) لاستخدامها في قائمة "القسم الأب" المنسدلة بدون القسم الحالي
   const flatCategories = useMemo(() => {
+    // 1. استبعاد القسم الحالي وجميع الأقسام الفرعية التابعة له لمنع التداخل (Circular Dependency)
+    const filterOutCategoryAndDescendants = (cats: Category[], idToRemove: string | number): Category[] => {
+      return cats.filter(c => String(c.id) !== String(idToRemove)).map(c => ({
+        ...c,
+        children: c.children ? filterOutCategoryAndDescendants(c.children, idToRemove) : []
+      }));
+    };
+
+    const safeCategories = editing ? filterOutCategoryAndDescendants(categories, editing.id) : categories;
+
+    // 2. تسطيح الأقسام المتبقية
     const flatten = (cats: Category[]): Category[] => {
       return cats.reduce((acc: Category[], cat) => {
         acc.push(cat);
@@ -196,8 +207,7 @@ export default function CategoriesPage() {
         return acc;
       }, []);
     };
-    const all = flatten(categories);
-    return editing ? all.filter((c) => c.id !== editing.id) : all;
+    return flatten(safeCategories);
   }, [categories, editing]);
 
   const openAdd = () => {
@@ -365,8 +375,8 @@ export default function CategoriesPage() {
               {t("categories.nameKu", "الاسم (كردي)")}
             </Label>
             <Input
-              className="h-9 text-left"
-              dir="ltr"
+              className="h-9 text-right"
+              dir="rtl"
               value={form.nameKu}
               onChange={(e) => setForm({ ...form, nameKu: e.target.value })}
             />

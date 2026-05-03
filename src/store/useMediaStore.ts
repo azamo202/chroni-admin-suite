@@ -115,9 +115,9 @@ export const useMediaStore = create<MediaState>((set, get) => ({
       const token = localStorage.getItem("admin_token");
       const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/maintenance-centers/${id}`, {
-        method: "POST", // توافق مع Laravel Spoofing
+        method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ ...data, _method: "POST" })
+        body: JSON.stringify(data)
       });
       const json = await res.json();
       if (res.ok || json.status) { await get().fetchData(true); return { success: true }; }
@@ -159,9 +159,9 @@ export const useMediaStore = create<MediaState>((set, get) => ({
       const token = localStorage.getItem("admin_token");
       const apiUrl = API_BASE_URL;
       const res = await fetch(`${apiUrl}/api/support-videos/${id}`, {
-        method: "POST", // توافق مع Laravel Spoofing
+        method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ ...data, _method: "POST" })
+        body: JSON.stringify(data)
       });
       const json = await res.json();
       if (res.ok || json.status) { await get().fetchData(true); return { success: true }; }
@@ -202,7 +202,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
     try {
       const token = localStorage.getItem("admin_token");
       const apiUrl = API_BASE_URL;
-      formData.append("_method", "POST"); // توافق مع Laravel Spoofing
+      formData.append("_method", "PUT"); // إرسال PUT كـ POST لدعم رفع الملفات في لارافيل
       const res = await fetch(`${apiUrl}/api/support-downloads/${id}`, {
         method: "POST", 
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" },
