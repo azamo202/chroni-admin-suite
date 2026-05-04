@@ -176,12 +176,6 @@ export default function ProductDetailPage() {
             <Separator className="my-5" />
             
             <div className="grid grid-cols-2 gap-y-5 text-sm">
-              {product.price !== null && product.price !== undefined && (
-                <div>
-                  <span className="text-xs text-muted-foreground block mb-1">{t('products.price')}</span>
-                  <span className="font-bold text-lg text-primary">${Number(product.price).toFixed(2)}</span>
-                </div>
-              )}
               <div>
                 <span className="text-xs text-muted-foreground block mb-1">{t('products.brand')}</span>
                 <span className="font-medium text-gray-800">{brandName}</span>

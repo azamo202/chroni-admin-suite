@@ -306,13 +306,9 @@ export default function ProductsPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterBrand, setFilterBrand] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
   const [modelNumber, setModelNumber] = useState("");
   const [sort, setSort] = useState("latest");
 
-  const debouncedMinPrice = useDebounce(minPrice, 300);
-  const debouncedMaxPrice = useDebounce(maxPrice, 300);
   const debouncedModelNumber = useDebounce(modelNumber, 300);
 
   const [page, setPage] = useState(1);
@@ -338,7 +334,6 @@ export default function ProductsPage() {
     originCountryAr: "",
     originCountryEn: "",
     originCountryKu: "",
-    price: "",
     isActive: true,
     features: [] as any[],
     specifications: [] as any[],
@@ -354,8 +349,6 @@ export default function ProductsPage() {
       debouncedSearch,
       filterCategory,
       filterBrand,
-      debouncedMinPrice,
-      debouncedMaxPrice,
       debouncedModelNumber,
       sort,
       filterStatus,
@@ -377,8 +370,6 @@ export default function ProductsPage() {
         category_id: filterCategory,
         category_slug: category_slug,
         brand_id: filterBrand,
-        min_price: debouncedMinPrice,
-        max_price: debouncedMaxPrice,
         model_number: debouncedModelNumber,
         sort,
         is_active: filterStatus,
@@ -416,7 +407,6 @@ export default function ProductsPage() {
       originCountryAr: origin.ar,
       originCountryEn: origin.en,
       originCountryKu: origin.ku,
-      price: p.price !== null && p.price !== undefined ? String(p.price) : "",
       isActive: p.is_active !== undefined ? !!Number(p.is_active) : true,
       features: parseFeatureArray(p.features),
       specifications: parseSpecArray(p.specifications),
@@ -500,7 +490,6 @@ export default function ProductsPage() {
     formData.append("origin_country[ar]", form.originCountryAr);
     formData.append("origin_country[en]", form.originCountryEn);
     formData.append("origin_country[ku]", form.originCountryKu);
-    if (form.price) formData.append("price", form.price);
     formData.append("is_active", form.isActive ? "1" : "0");
 
     form.images.forEach((file) => formData.append("images[]", file));
@@ -657,8 +646,6 @@ export default function ProductsPage() {
               setFilterCategory("all");
               setFilterBrand("all");
               setFilterStatus("all");
-              setMinPrice("");
-              setMaxPrice("");
               setSort("latest");
               setPage(1);
             }}
@@ -909,22 +896,7 @@ export default function ProductsPage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">
-                      {t("products.priceLabel", "السعر ($)")}
-                    </Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={form.price}
-                      onChange={(e) =>
-                        setForm({ ...form, price: e.target.value })
-                      }
-                      className="bg-white shadow-sm"
-                    />
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">
                       {t("products.categoryLabel", "القسم *")}

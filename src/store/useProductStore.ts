@@ -8,7 +8,7 @@ interface ProductState {
   loading: boolean;
   totalPages: number;
   
-  fetchData: (params?: { page?: number; search?: string; category_id?: string; category_slug?: string; brand_id?: string; min_price?: string; max_price?: string; model_number?: string; sort?: string; is_active?: string }) => Promise<void>;
+  fetchData: (params?: { page?: number; search?: string; category_id?: string; category_slug?: string; brand_id?: string; model_number?: string; sort?: string; is_active?: string }) => Promise<void>;
   createProduct: (data: FormData) => Promise<{ success: boolean; message?: string }>;
   updateProduct: (id: string | number, data: FormData) => Promise<{ success: boolean; message?: string }>;
   deleteProduct: (id: string | number) => Promise<{ success: boolean; message?: string }>;
@@ -38,8 +38,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (params?.category_id && params.category_id !== 'all') queryParams.append('category_id', params.category_id);
       if (params?.category_slug && params.category_slug !== 'all') queryParams.append('category_slug', params.category_slug);
       if (params?.brand_id && params.brand_id !== 'all') queryParams.append('brand_id', params.brand_id);
-      if (params?.min_price) queryParams.append('min_price', params.min_price);
-      if (params?.max_price) queryParams.append('max_price', params.max_price);
       if (params?.model_number) queryParams.append('model_number', params.model_number);
       if (params?.sort && params.sort !== 'latest') queryParams.append('sort', params.sort);
       if (params?.is_active && params.is_active !== 'all') queryParams.append('is_active', params.is_active);
