@@ -227,3 +227,5 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
     </div>
   );
 }
+
+export { CategoryTreeSelect } from './CategoryTreeSelect';
