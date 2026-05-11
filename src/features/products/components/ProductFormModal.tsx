@@ -27,6 +27,8 @@ import {
   parseSpecArray,
 } from "@/features/products/utils/productHelpers";
 import { toast } from "sonner";
+import { API_BASE_URL } from "@/config";
+import { Check, Star } from "lucide-react";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -72,11 +74,65 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   };
 
   const [form, setForm] = useState(initialFormState);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
+  const [newPrimaryIndex, setNewPrimaryIndex] = useState<number | null>(null);
+
+  const handleSetPrimary = async (imageId: number) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch(`${API_BASE_URL}/api/products/images/${imageId}/set-primary`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      const json = await res.json();
+      if (json.status) {
+        toast.success(t('products.primarySetSuccess', 'تم تعيين الصورة كصورة رئيسية'));
+        setExistingImages(prev => prev.map(img => ({
+          ...img,
+          is_primary: img.id === imageId
+        })));
+      } else {
+        toast.error(json.message);
+      }
+    } catch (err) {
+      toast.error(t('common.error', 'حدث خطأ في العملية'));
+    }
+  };
+
+  const handleDeleteImage = async (imageId: number) => {
+    if (!window.confirm(t('common.deleteConfirmDesc', 'هل أنت متأكد من حذف هذه الصورة؟'))) return;
+    
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch(`${API_BASE_URL}/api/products/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      const json = await res.json();
+      if (json.status) {
+        toast.success(t('products.imageDeletedSuccess', 'تم حذف الصورة بنجاح'));
+        setExistingImages(prev => prev.filter(img => img.id !== imageId));
+      } else {
+        toast.error(json.message);
+      }
+    } catch (err) {
+      toast.error(t('common.error', 'حدث خطأ في العملية'));
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
+      setNewPrimaryIndex(null);
       if (editingProduct) {
         const p = editingProduct;
+        setExistingImages(p.images || []);
+        // ... rest of the existing useEffect logic ...
         const name = parseI18n(p.name);
         const desc = parseI18n(p.description);
         const origin = parseI18n(p.origin_country || p.originCountry);
@@ -179,6 +235,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     formData.append("is_active", form.isActive ? "1" : "0");
 
     form.images.forEach((file) => formData.append("images[]", file));
+    if (newPrimaryIndex !== null) {
+      formData.append("primary_image_index", String(newPrimaryIndex));
+    }
 
     const formattedFeatures = form.features.map((f) => ({
       feature_text: f,
@@ -774,13 +833,63 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     multiple
                     accept="image/*"
                     className="mt-4 max-w-xs cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                    onChange={(e) =>
-                      e.target.files &&
-                      setForm({ ...form, images: Array.from(e.target.files) })
-                    }
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        setForm({ ...form, images: [...form.images, ...Array.from(e.target.files)] });
+                      }
+                      e.target.value = ''; // إصلاح مشكلة عدم الاستجابة عند اختيار نفس الصور
+                    }}
                   />
                 </div>
               </div>
+
+              {editingProduct && existingImages.length > 0 && (
+                <div className="bg-white p-5 rounded-xl border shadow-sm">
+                  <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                    <ImageIcon className="h-4 w-4" />
+                    {t("products.existingImages", "صور المنتج الحالية")} ({existingImages.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-4">
+                    {existingImages.map((img, i) => (
+                      <div key={img.id || i} className="relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md">
+                        {img.is_primary && (
+                          <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-yellow-500 hover:bg-yellow-600 z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
+                            <Star className="h-3 w-3 fill-white" />
+                            {t("products.mainImage", "الرئيسية")}
+                          </Badge>
+                        )}
+                        <img
+                          src={img.url || img.image_path}
+                          alt="product"
+                          className="h-24 w-24 object-cover rounded shadow-sm bg-white"
+                        />
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity rounded">
+                          {!img.is_primary && (
+                            <Button 
+                              size="icon" 
+                              variant="secondary" 
+                              className="h-8 w-8 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white border-none"
+                              onClick={() => handleSetPrimary(img.id)}
+                              title={t('products.setAsPrimary', 'تعيين كصورة رئيسية')}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button 
+                            size="icon" 
+                            variant="destructive" 
+                            className="h-8 w-8 rounded-full"
+                            onClick={() => handleDeleteImage(img.id)}
+                            title={t('common.delete', 'حذف')}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {form.images.length > 0 && (
                 <div className="bg-white p-5 rounded-xl border shadow-sm">
@@ -789,36 +898,54 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     {form.images.length})
                   </h4>
                   <div className="flex flex-wrap gap-4">
-                    {form.images.map((img, i) => (
+                    {form.images.map((img, i) => {
+                      const isPrimary = newPrimaryIndex === i || (newPrimaryIndex === null && existingImages.length === 0 && i === 0);
+                      return (
                       <div
                         key={i}
-                        className="relative group border rounded-lg p-1 bg-gray-50"
+                        className="relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md"
                       >
-                        {i === 0 && (
-                          <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-primary z-10 px-2 py-0.5">
+                        {isPrimary && (
+                          <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-primary z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
+                            <Star className="h-3 w-3 fill-white" />
                             {t("products.mainImage", "الرئيسية")}
                           </Badge>
                         )}
                         <img
                           src={URL.createObjectURL(img)}
                           alt="preview"
-                          className="h-24 w-24 object-cover rounded shadow-sm"
+                          className="h-24 w-24 object-cover rounded shadow-sm bg-white"
                         />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const n = [...form.images];
-                            n.splice(i, 1);
-                            setForm({ ...form, images: n });
-                          }}
-                          className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded"
-                        >
-                          <div className="bg-red-500 text-white rounded-full p-2">
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity rounded">
+                          {!isPrimary && (
+                            <Button 
+                              size="icon" 
+                              variant="secondary" 
+                              className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 text-white border-none"
+                              onClick={() => setNewPrimaryIndex(i)}
+                              title={t('products.setAsPrimary', 'تعيين كصورة رئيسية')}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="h-8 w-8 rounded-full"
+                            onClick={() => {
+                              const n = [...form.images];
+                              n.splice(i, 1);
+                              setForm({ ...form, images: n });
+                              if (newPrimaryIndex === i) setNewPrimaryIndex(null);
+                              else if (newPrimaryIndex !== null && newPrimaryIndex > i) setNewPrimaryIndex(newPrimaryIndex - 1);
+                            }}
+                            title={t('common.delete', 'حذف')}
+                          >
                             <Trash2 className="h-4 w-4" />
-                          </div>
-                        </button>
+                          </Button>
+                        </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
               )}

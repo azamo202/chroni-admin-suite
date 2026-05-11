@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useProductDetailStore } from '@/store/useProductDetailStore';
 import { useCategoryStore } from '@/store/useCategoryStore';
 
@@ -42,11 +42,22 @@ export default function ProductDetailPage() {
   }, [id, fetchProduct, product?.id]);
 
   // جلب الأقسام إذا لم تكن محملة مسبقاً لاستخراج المسار الكامل (الأساسي / الفرعي)
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+
+  // تحديث الصورة النشطة عند تحميل المنتج
   useEffect(() => {
-    if (categories.length === 0) {
-      fetchCategories();
+    if (product) {
+      const primary = product.images?.find((img: any) => img.is_primary) || 
+                      (product.images?.length > 0 ? product.images[0] : null);
+      setActiveImage(primary?.url || primary?.image_path || product.image || null);
     }
-  }, [categories.length, fetchCategories]);
+  }, [product]);
+
+  // تجهيز المعرض مع وضع الصورة الأساسية أولاً
+  const sortedGallery = useMemo(() => {
+    if (!product?.images) return [];
+    return [...product.images].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
+  }, [product?.images]);
 
   if (loading) {
     return (
@@ -112,8 +123,6 @@ export default function ProductDetailPage() {
 
   const brandName = product.brand?.name || t('products.notSpecified', 'غير محدد');
   const isActive = !!product.is_active;
-  const primaryImage = product.image || (product.images?.length > 0 ? (product.images[0].url || product.images[0].image_path || product.images[0]) : null);
-  const gallery = product.images?.map((img: any) => img.url || img.image_path || img) || [];
 
   return (
     <>
@@ -129,25 +138,54 @@ export default function ProductDetailPage() {
         {/* قسم الصور (Gallery) */}
         <div>
           <div className="bg-card border rounded-xl overflow-hidden mb-3 shadow-sm group relative">
-            {primaryImage ? (
-               <img src={primaryImage} alt={productName} className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105" />
+            {activeImage ? (
+               <img 
+                 src={activeImage} 
+                 alt={productName} 
+                 className="w-full h-[450px] object-contain bg-white transition-all duration-500" 
+               />
             ) : (
                <div className="w-full h-96 flex flex-col items-center justify-center bg-muted/50 text-muted-foreground">
                  <EyeOff className="h-10 w-10 mb-2 opacity-50" />
                <span>{t('products.noImage', 'لا توجد صورة للمنتج')}</span>
                </div>
             )}
+            
+            {/* مؤشر الصورة الأساسية في العرض الكبير */}
+            {product.images?.find((img: any) => (img.url || img.image_path) === activeImage)?.is_primary && (
+              <Badge className="absolute top-4 right-4 bg-primary/90 hover:bg-primary shadow-lg border-none px-3 py-1 text-[11px] backdrop-blur-sm">
+                {t('products.mainImage', 'الصورة الرئيسية')}
+              </Badge>
+            )}
           </div>
-          {gallery.length > 1 && (
-            <div className="grid grid-cols-4 gap-3">
-              {gallery.map((img: string, i: number) => (
-                <img 
-                  key={i} 
-                  src={img} 
-                  alt={`صورة ${i + 1}`} 
-                  className="h-24 w-full object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-all ring-2 ring-transparent hover:ring-primary shadow-sm" 
-                />
-              ))}
+          
+          {sortedGallery.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {sortedGallery.map((img: any, i: number) => {
+                const imgUrl = img.url || img.image_path || img;
+                const isSelected = activeImage === imgUrl;
+                
+                return (
+                  <div 
+                    key={i} 
+                    onClick={() => setActiveImage(imgUrl)}
+                    className={`relative min-w-[100px] h-24 rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden shadow-sm flex-shrink-0 ${
+                      isSelected ? 'border-primary ring-2 ring-primary/20 scale-[0.98]' : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <img 
+                      src={imgUrl} 
+                      alt={`صورة ${i + 1}`} 
+                      className={`h-full w-full object-cover transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-70 hover:opacity-100'}`} 
+                    />
+                    {img.is_primary && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-primary/80 text-white text-[9px] text-center py-0.5 font-bold">
+                        {t('products.primary', 'أساسية')}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
