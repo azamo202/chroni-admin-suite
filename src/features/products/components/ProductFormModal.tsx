@@ -163,9 +163,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         const fetchDetails = async () => {
           try {
             const token = localStorage.getItem("admin_token");
-            const apiUrl =
-              import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-            const res = await fetch(`${apiUrl}/api/products/${p.id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/products/${p.id}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: "application/json",

@@ -235,28 +235,48 @@ export default function ProductDetailPage() {
 
           {/* المواصفات (Specifications) */}
           {product.specifications && Object.keys(product.specifications).length > 0 && (
-            <div className="bg-card border rounded-xl p-6 shadow-sm">
-              <h3 className="text-base font-bold mb-4 text-gray-900">{t('products.specifications')}</h3>
-              <div className="space-y-6">
-                {Object.entries(product.specifications).map(([group, specs]: [string, any], i: number) => (
-                  <div key={i} className="space-y-3">
-                    {getLocalizedValue(group, i18n.language) && (
-                      <h4 className="text-xs font-bold text-primary bg-primary/5 border border-primary/10 px-3 py-1.5 rounded-md inline-block">
-                        {getLocalizedValue(group, i18n.language)}
-                      </h4>
-                    )}
-                    <div className="space-y-0 rounded-lg border overflow-hidden">
-                      {Array.isArray(specs) && specs.map((spec: any, j: number) => (
-                        <div key={j} className="flex justify-between py-2.5 px-4 border-b last:border-0 text-sm bg-white even:bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                          <span className="text-muted-foreground font-medium">{getLocalizedValue(spec.key || spec.spec_key, i18n.language)}</span>
-                          <span className="font-semibold text-gray-800 text-left" dir="auto">{getLocalizedValue(spec.value || spec.spec_value, i18n.language)}</span>
+            (() => {
+              // Group specifications if it's an array from the raw API
+              let groupedSpecs = product.specifications;
+              if (Array.isArray(product.specifications)) {
+                groupedSpecs = product.specifications.reduce((acc: any, spec: any) => {
+                  const groupObj = typeof spec.group_name === 'object' ? JSON.stringify(spec.group_name) : String(spec.group_name || '');
+                  if (!acc[groupObj]) acc[groupObj] = [];
+                  acc[groupObj].push(spec);
+                  return acc;
+                }, {});
+              }
+
+              return (
+                <div className="bg-card border rounded-xl p-6 shadow-sm">
+                  <h3 className="text-base font-bold mb-4 text-gray-900">{t('products.specifications')}</h3>
+                  <div className="space-y-6">
+                    {Object.entries(groupedSpecs).map(([group, specs]: [string, any], i: number) => {
+                      let parsedGroup = group;
+                      try { parsedGroup = JSON.parse(group); } catch(e) {}
+                      
+                      return (
+                        <div key={i} className="space-y-3">
+                          {getLocalizedValue(parsedGroup, i18n.language) && (
+                            <h4 className="text-xs font-bold text-primary bg-primary/5 border border-primary/10 px-3 py-1.5 rounded-md inline-block">
+                              {getLocalizedValue(parsedGroup, i18n.language)}
+                            </h4>
+                          )}
+                          <div className="space-y-0 rounded-lg border overflow-hidden">
+                            {Array.isArray(specs) && specs.map((spec: any, j: number) => (
+                              <div key={j} className="flex justify-between py-2.5 px-4 border-b last:border-0 text-sm bg-white even:bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                                <span className="text-muted-foreground font-medium">{getLocalizedValue(spec.key || spec.spec_key, i18n.language)}</span>
+                                <span className="font-semibold text-gray-800 text-left" dir="auto">{getLocalizedValue(spec.value || spec.spec_value, i18n.language)}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              );
+            })()
           )}
 
           {/* المميزات (Features) */}

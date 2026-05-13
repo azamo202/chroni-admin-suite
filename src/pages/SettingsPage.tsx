@@ -4,14 +4,22 @@ import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Phone, Save, MessageCircle, Mail, Facebook, Instagram, Youtube, Globe } from 'lucide-react';
+import { Phone, Save, MessageCircle, Mail, Facebook, Instagram, Youtube, Globe, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '@/config';
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
-  const [form, setForm] = useState({
-    phone: '',
+  const [form, setForm] = useState<{
+    phone: string[];
+    whatsapp: string;
+    email: string;
+    tiktok: string;
+    facebook: string;
+    instagram: string;
+    youtube: string;
+  }>({
+    phone: [''],
     whatsapp: '',
     email: '',
     tiktok: '',
@@ -34,8 +42,21 @@ export default function SettingsPage() {
         });
         const data = await res.json();
         if (res.ok && data.settings) {
+          let phoneArray = [''];
+          if (Array.isArray(data.settings.phone) && data.settings.phone.length > 0) {
+            phoneArray = data.settings.phone;
+          } else if (typeof data.settings.phone === 'string') {
+             try {
+                const parsed = JSON.parse(data.settings.phone);
+                if (Array.isArray(parsed) && parsed.length > 0) phoneArray = parsed;
+                else if (data.settings.phone) phoneArray = [data.settings.phone];
+             } catch(e) {
+                if (data.settings.phone) phoneArray = [data.settings.phone];
+             }
+          }
+
           setForm({
-            phone: data.settings.phone || '',
+            phone: phoneArray,
             whatsapp: data.settings.whatsapp || '',
             email: data.settings.email || '',
             tiktok: data.settings.tiktok || '',
@@ -137,13 +158,45 @@ export default function SettingsPage() {
                 <Phone className="h-4 w-4 text-muted-foreground" />
                 {t('settings.contactPhone', 'رقم الهاتف')}
               </Label>
-              <Input 
-                className="h-10 text-left bg-white transition-shadow focus:shadow-md" 
-                dir="ltr" 
-                value={form.phone} 
-                onChange={(e) => setForm({ ...form, phone: e.target.value })} 
-                placeholder="+964 000 000 0000" 
-              />
+              {form.phone.map((p, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <Input 
+                    className="h-10 text-left bg-white transition-shadow focus:shadow-md flex-1" 
+                    dir="ltr" 
+                    value={p} 
+                    onChange={(e) => {
+                      const newPhone = [...form.phone];
+                      newPhone[index] = e.target.value;
+                      setForm({ ...form, phone: newPhone });
+                    }} 
+                    placeholder="+964 000 000 0000" 
+                  />
+                  {form.phone.length > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const newPhone = form.phone.filter((_, i) => i !== index);
+                        setForm({ ...form, phone: newPhone });
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full border-dashed mt-1"
+                onClick={() => setForm({ ...form, phone: [...form.phone, ''] })}
+              >
+                <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+                {t('settings.addPhone', 'إضافة رقم هاتف')}
+              </Button>
             </div>
             
             <div className="space-y-2">

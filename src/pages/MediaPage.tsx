@@ -54,7 +54,7 @@ export default function MediaPage() {
   const [isCenterModalOpen, setIsCenterModalOpen] = useState(false);
   const [editingCenter, setEditingCenter] = useState<MaintenanceCenter | null>(null);
   const [deleteCenterId, setDeleteCenterId] = useState<number | null>(null);
-  const [centerForm, setCenterForm] = useState({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: '', addressAr: '', addressEn: '', addressKu: '', locationLink: '' });
+  const [centerForm, setCenterForm] = useState<{ nameAr: string, nameEn: string, nameKu: string, cityAr: string, cityEn: string, cityKu: string, phone: string[], addressAr: string, addressEn: string, addressKu: string, locationLink: string }>({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '' });
 
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<SupportVideo | null>(null);
@@ -79,6 +79,7 @@ export default function MediaPage() {
       const cty = parseI18n((c as any).city);
       const a = parseI18n(c.address);
       const p = c.phone || c.phone_number || '';
+      const phoneStr = Array.isArray(p) ? p.join(' ') : String(p);
       return (
         n.ar.toLowerCase().includes(q) ||
         n.en.toLowerCase().includes(q) ||
@@ -86,7 +87,7 @@ export default function MediaPage() {
         cty.ar.toLowerCase().includes(q) ||
         cty.en.toLowerCase().includes(q) ||
         cty.ku.toLowerCase().includes(q) ||
-        p.toLowerCase().includes(q) ||
+        phoneStr.toLowerCase().includes(q) ||
         a.ar.toLowerCase().includes(q) ||
         a.en.toLowerCase().includes(q) ||
         a.ku.toLowerCase().includes(q)
@@ -124,7 +125,7 @@ export default function MediaPage() {
   // --- معالجات مراكز الصيانة ---
   const openAddCenter = () => {
     setEditingCenter(null);
-    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: '', addressAr: '', addressEn: '', addressKu: '', locationLink: '' });
+    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '' });
     setIsCenterModalOpen(true);
   };
 
@@ -133,10 +134,25 @@ export default function MediaPage() {
     const name = parseI18n(center.name);
     const city = parseI18n((center as any).city);
     const address = parseI18n(center.address);
+
+    let phoneArray = [''];
+    const p = center.phone || center.phone_number;
+    if (Array.isArray(p) && p.length > 0) {
+      phoneArray = p;
+    } else if (typeof p === 'string') {
+      try {
+        const parsed = JSON.parse(p);
+        if (Array.isArray(parsed) && parsed.length > 0) phoneArray = parsed;
+        else if (p) phoneArray = [p];
+      } catch(e) {
+        if (p) phoneArray = [p];
+      }
+    }
+
     setCenterForm({
       nameAr: name.ar, nameEn: name.en, nameKu: name.ku,
       cityAr: city.ar, cityEn: city.en, cityKu: city.ku,
-      phone: center.phone || center.phone_number || '',
+      phone: phoneArray,
       addressAr: address.ar, addressEn: address.en, addressKu: address.ku,
       locationLink: center.location_link || ''
     });
@@ -374,7 +390,9 @@ export default function MediaPage() {
                       <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3.5 font-medium text-gray-800">{getLocalizedValue(center.name, i18n.language) || center.name || t('common.unnamed', 'بدون اسم')}</td>
                         <td className="px-4 py-3.5 text-muted-foreground text-start">
-                          <span dir="ltr">{center.phone || center.phone_number || '-'}</span>
+                          <span dir="ltr">
+                            {Array.isArray(center.phone) ? center.phone.join(' - ') : (center.phone || center.phone_number || '-')}
+                          </span>
                         </td>
                         <td className="px-4 py-3.5 text-muted-foreground">{getLocalizedValue((center as any).city, i18n.language) || '-'}</td>
                         <td className="px-4 py-3.5 text-muted-foreground">{getLocalizedValue(center.address, i18n.language) || center.address || '-'}</td>
@@ -451,8 +469,8 @@ export default function MediaPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameAr', 'اسم المركز (عربي)')}</Label><Input className="h-9" value={centerForm.nameAr} onChange={e => setCenterForm({...centerForm, nameAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameEn', 'اسم المركز (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameEn} onChange={e => setCenterForm({...centerForm, nameEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameKu', 'اسم المركز (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={centerForm.nameKu} onChange={e => setCenterForm({...centerForm, nameKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameEn', 'اسم المركز (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.nameEn} onChange={e => setCenterForm({...centerForm, nameEn: e.target.value})} /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.centerNameKu', 'اسم المركز (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={centerForm.nameKu} onChange={e => setCenterForm({...centerForm, nameKu: e.target.value})} /></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.cityAr', 'المدينة (عربي)')}</Label><Input className="h-9" value={centerForm.cityAr} onChange={e => setCenterForm({...centerForm, cityAr: e.target.value})} required /></div>
@@ -461,12 +479,50 @@ export default function MediaPage() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.phone', 'رقم الهاتف')}</Label>
-            <Input className="h-9 text-left" dir="ltr" value={centerForm.phone} onChange={e => setCenterForm({...centerForm, phone: e.target.value})} required />
+            {centerForm.phone.map((p, index) => (
+              <div key={index} className="flex gap-2 mb-2">
+                <Input 
+                  className="h-9 text-left flex-1" 
+                  dir="ltr" 
+                  value={p} 
+                  onChange={(e) => {
+                    const newPhone = [...centerForm.phone];
+                    newPhone[index] = e.target.value;
+                    setCenterForm({ ...centerForm, phone: newPhone });
+                  }} 
+                  required 
+                />
+                {centerForm.phone.length > 1 && (
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    size="icon"
+                    className="h-9 w-9 shrink-0"
+                    onClick={() => {
+                      const newPhone = centerForm.phone.filter((_, i) => i !== index);
+                      setCenterForm({ ...centerForm, phone: newPhone });
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full border-dashed mt-1"
+              onClick={() => setCenterForm({ ...centerForm, phone: [...centerForm.phone, ''] })}
+            >
+              <Plus className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />
+              {t('settings.addPhone', 'إضافة رقم هاتف')}
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressAr', 'العنوان (عربي)')}</Label><Input className="h-9" value={centerForm.addressAr} onChange={e => setCenterForm({...centerForm, addressAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressEn', 'العنوان (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressEn} onChange={e => setCenterForm({...centerForm, addressEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressKu', 'العنوان (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={centerForm.addressKu} onChange={e => setCenterForm({...centerForm, addressKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressEn', 'العنوان (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={centerForm.addressEn} onChange={e => setCenterForm({...centerForm, addressEn: e.target.value})} /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.addressKu', 'العنوان (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={centerForm.addressKu} onChange={e => setCenterForm({...centerForm, addressKu: e.target.value})} /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.locationLink', 'رابط الموقع (Google Maps)')}</Label>
@@ -479,8 +535,8 @@ export default function MediaPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleAr', 'عنوان الفيديو (عربي)')}</Label><Input className="h-9" value={videoForm.titleAr} onChange={e => setVideoForm({...videoForm, titleAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleEn', 'عنوان الفيديو (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleEn} onChange={e => setVideoForm({...videoForm, titleEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleKu', 'عنوان الفيديو (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={videoForm.titleKu} onChange={e => setVideoForm({...videoForm, titleKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleEn', 'عنوان الفيديو (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={videoForm.titleEn} onChange={e => setVideoForm({...videoForm, titleEn: e.target.value})} /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.videoTitleKu', 'عنوان الفيديو (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={videoForm.titleKu} onChange={e => setVideoForm({...videoForm, titleKu: e.target.value})} /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.youtubeUrl', 'رابط يوتيوب (YouTube URL)')}</Label>
@@ -493,8 +549,8 @@ export default function MediaPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameAr', 'عنوان الملف (عربي)')}</Label><Input className="h-9" value={downloadForm.titleAr} onChange={e => setDownloadForm({...downloadForm, titleAr: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameEn', 'عنوان الملف (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleEn} onChange={e => setDownloadForm({...downloadForm, titleEn: e.target.value})} required /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameKu', 'عنوان الملف (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={downloadForm.titleKu} onChange={e => setDownloadForm({...downloadForm, titleKu: e.target.value})} required /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameEn', 'عنوان الملف (إنجليزي)')}</Label><Input className="h-9 text-left" dir="ltr" value={downloadForm.titleEn} onChange={e => setDownloadForm({...downloadForm, titleEn: e.target.value})} /></div>
+            <div className="space-y-1.5"><Label className="text-xs font-medium">{t('media.fileNameKu', 'عنوان الملف (كردي)')}</Label><Input className="h-9 text-right" dir="rtl" value={downloadForm.titleKu} onChange={e => setDownloadForm({...downloadForm, titleKu: e.target.value})} /></div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.uploadFile', 'رفع الملف (PDF, DOC, الخ)')}</Label>

@@ -6,8 +6,8 @@ export interface MaintenanceCenter {
   id: number;
   name: any;
   city?: any;
-  phone?: string;
-  phone_number?: string;
+  phone?: string | string[];
+  phone_number?: string | string[];
   address: any;
   location_link?: string;
 }
