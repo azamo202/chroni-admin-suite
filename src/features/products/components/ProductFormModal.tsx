@@ -30,6 +30,23 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { Check, Star } from "lucide-react";
 
+const groupSpecs = (flatSpecs: any[]) => {
+  const grouped: any[] = [];
+  flatSpecs.forEach((spec) => {
+    const gNameStr = JSON.stringify(spec.group_name);
+    let existingGroup = grouped.find((g) => JSON.stringify(g.group_name) === gNameStr);
+    if (!existingGroup) {
+      existingGroup = { group_name: spec.group_name, attributes: [] };
+      grouped.push(existingGroup);
+    }
+    existingGroup.attributes.push({
+      spec_key: spec.spec_key,
+      spec_value: spec.spec_value,
+    });
+  });
+  return grouped;
+};
+
 interface ProductFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -154,7 +171,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           originCountryKu: origin.ku,
           isActive: p.is_active !== undefined ? !!Number(p.is_active) : true,
           features: parseFeatureArray(p.features),
-          specifications: parseSpecArray(p.specifications),
+          specifications: groupSpecs(parseSpecArray(p.specifications)),
           images: [],
         });
         setActiveTab("basic");
@@ -193,7 +210,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 features:
                   parsedFeatures.length > 0 ? parsedFeatures : prev.features,
                 specifications:
-                  parsedSpecs.length > 0 ? parsedSpecs : prev.specifications,
+                  parsedSpecs.length > 0 ? groupSpecs(parsedSpecs) : prev.specifications,
               }));
             }
           } catch (err) {
@@ -243,11 +260,16 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }));
     formData.append("features", JSON.stringify(formattedFeatures));
 
-    const formattedSpecs = form.specifications.map((s) => ({
-      group_name: s.group_name,
-      spec_key: s.spec_key,
-      spec_value: s.spec_value,
-    }));
+    const formattedSpecs: any[] = [];
+    form.specifications.forEach((group: any) => {
+      group.attributes.forEach((attr: any) => {
+        formattedSpecs.push({
+          group_name: group.group_name,
+          spec_key: attr.spec_key,
+          spec_value: attr.spec_value,
+        });
+      });
+    });
     formData.append("specifications", JSON.stringify(formattedSpecs));
 
     await onSave(formData);
@@ -610,72 +632,65 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                           ...form.specifications,
                           {
                             group_name: { ar: "", en: "", ku: "" },
-                            spec_key: { ar: "", en: "", ku: "" },
-                            spec_value: { ar: "", en: "", ku: "" },
+                            attributes: [
+                              {
+                                spec_key: { ar: "", en: "", ku: "" },
+                                spec_value: { ar: "", en: "", ku: "" },
+                              }
+                            ]
                           },
                         ],
                       })
                     }
                   >
                     <Plus className="h-3.5 w-3.5 ml-1" />{" "}
-                    {t("products.addSpec", "إضافة مواصفة")}
+                    {t("products.addSpecGroup", "إضافة مجموعة")}
                   </Button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {form.specifications.length === 0 && (
                     <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
                       {t("products.noSpecs", "لم يتم إضافة أي مواصفات فنية بعد")}
                     </div>
                   )}
-                  {form.specifications.map((s, i) => (
+                  {form.specifications.map((group, groupIndex) => (
                     <div
-                      key={i}
-                      className="flex flex-col gap-3 bg-white p-4 rounded-xl border shadow-sm relative"
+                      key={groupIndex}
+                      className="flex flex-col gap-4 bg-white p-4 rounded-xl border shadow-sm relative"
                     >
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-2 left-2 text-gray-400 hover:text-red-500 hover:bg-red-50 h-8 w-8"
+                        className="absolute top-2 rtl:left-2 ltr:right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 h-8 w-8 z-10"
                         onClick={() => {
                           const n = [...form.specifications];
-                          n.splice(i, 1);
+                          n.splice(groupIndex, 1);
                           setForm({ ...form, specifications: n });
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                      <div className="flex items-center gap-3 pl-12">
-                        <span className="text-xs font-bold text-gray-500 w-16 shrink-0 bg-gray-50 px-2 py-1 rounded text-center border">
+                      
+                      <div className="flex items-center gap-3 ltr:pr-12 rtl:pl-12 bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                        <span className="text-xs font-bold text-primary w-20 shrink-0 bg-primary/10 px-2 py-1.5 rounded text-center border border-primary/20">
                           {t("products.specGroup", "المجموعة")}
                         </span>
                         <Input
                           placeholder={t("products.arabic", "عربي")}
-                          value={s.group_name.ar}
+                          value={group.group_name.ar}
                           onChange={(e) => {
                             const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              group_name: {
-                                ...n[i].group_name,
-                                ar: e.target.value,
-                              },
-                            };
+                            n[groupIndex].group_name.ar = e.target.value;
                             setForm({ ...form, specifications: n });
                           }}
                         />
                         <Input
                           placeholder={t("products.english", "English")}
                           dir="ltr"
-                          value={s.group_name.en}
+                          value={group.group_name.en}
                           onChange={(e) => {
                             const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              group_name: {
-                                ...n[i].group_name,
-                                en: e.target.value,
-                              },
-                            };
+                            n[groupIndex].group_name.en = e.target.value;
                             setForm({ ...form, specifications: n });
                           }}
                         />
@@ -683,125 +698,126 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                           placeholder={t("products.kurdish", "کوردی")}
                           dir="rtl"
                           className="text-right"
-                          value={s.group_name.ku}
+                          value={group.group_name.ku}
                           onChange={(e) => {
                             const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              group_name: {
-                                ...n[i].group_name,
-                                ku: e.target.value,
-                              },
-                            };
+                            n[groupIndex].group_name.ku = e.target.value;
                             setForm({ ...form, specifications: n });
                           }}
                         />
                       </div>
-                      <div className="flex items-center gap-3 pl-12">
-                        <span className="text-xs font-bold text-gray-500 w-16 shrink-0 bg-gray-50 px-2 py-1 rounded text-center border">
-                          {t("products.specName", "اسم الصفة")}
-                        </span>
-                        <Input
-                          placeholder={t("products.arabic", "عربي")}
-                          value={s.spec_key.ar}
-                          onChange={(e) => {
+
+                      <div className="space-y-3 ltr:pl-4 rtl:pr-4 ltr:border-l-2 rtl:border-r-2 border-primary/20 ltr:ml-4 rtl:mr-4">
+                        {group.attributes.map((attr: any, attrIndex: number) => (
+                          <div key={attrIndex} className="relative bg-gray-50/50 p-3 rounded-lg border group/attr">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 ltr:right-1 rtl:left-1 text-gray-400 hover:text-red-500 hover:bg-red-50 h-6 w-6 opacity-0 group-hover/attr:opacity-100 transition-opacity"
+                              onClick={() => {
+                                const n = [...form.specifications];
+                                n[groupIndex].attributes.splice(attrIndex, 1);
+                                setForm({ ...form, specifications: n });
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                            
+                            <div className="flex flex-col gap-2 ltr:pr-8 rtl:pl-8">
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-bold text-gray-500 w-16 shrink-0 bg-white px-2 py-1.5 rounded text-center border">
+                                  {t("products.specName", "اسم الصفة")}
+                                </span>
+                                <Input
+                                  className="h-8 text-xs"
+                                  placeholder={t("products.arabic", "عربي")}
+                                  value={attr.spec_key.ar}
+                                  onChange={(e) => {
+                                    const n = [...form.specifications];
+                                    n[groupIndex].attributes[attrIndex].spec_key.ar = e.target.value;
+                                    setForm({ ...form, specifications: n });
+                                  }}
+                                />
+                                <Input
+                                  className="h-8 text-xs"
+                                  placeholder={t("products.english", "English")}
+                                  dir="ltr"
+                                  value={attr.spec_key.en}
+                                  onChange={(e) => {
+                                    const n = [...form.specifications];
+                                    n[groupIndex].attributes[attrIndex].spec_key.en = e.target.value;
+                                    setForm({ ...form, specifications: n });
+                                  }}
+                                />
+                                <Input
+                                  className="h-8 text-xs"
+                                  placeholder={t("products.kurdish", "کوردی")}
+                                  dir="rtl"
+                                  value={attr.spec_key.ku}
+                                  onChange={(e) => {
+                                    const n = [...form.specifications];
+                                    n[groupIndex].attributes[attrIndex].spec_key.ku = e.target.value;
+                                    setForm({ ...form, specifications: n });
+                                  }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-bold text-gray-500 w-16 shrink-0 bg-white px-2 py-1.5 rounded text-center border">
+                                  {t("products.specValue", "القيمة")}
+                                </span>
+                                <Input
+                                  className="h-8 text-xs"
+                                  placeholder={t("products.arabic", "عربي")}
+                                  value={attr.spec_value.ar}
+                                  onChange={(e) => {
+                                    const n = [...form.specifications];
+                                    n[groupIndex].attributes[attrIndex].spec_value.ar = e.target.value;
+                                    setForm({ ...form, specifications: n });
+                                  }}
+                                />
+                                <Input
+                                  className="h-8 text-xs"
+                                  placeholder={t("products.english", "English")}
+                                  dir="ltr"
+                                  value={attr.spec_value.en}
+                                  onChange={(e) => {
+                                    const n = [...form.specifications];
+                                    n[groupIndex].attributes[attrIndex].spec_value.en = e.target.value;
+                                    setForm({ ...form, specifications: n });
+                                  }}
+                                />
+                                <Input
+                                  className="h-8 text-xs"
+                                  placeholder={t("products.kurdish", "کوردی")}
+                                  dir="rtl"
+                                  value={attr.spec_value.ku}
+                                  onChange={(e) => {
+                                    const n = [...form.specifications];
+                                    n[groupIndex].attributes[attrIndex].spec_value.ku = e.target.value;
+                                    setForm({ ...form, specifications: n });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-primary hover:text-primary hover:bg-primary/5 mt-2"
+                          onClick={() => {
                             const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              spec_key: {
-                                ...n[i].spec_key,
-                                ar: e.target.value,
-                              },
-                            };
+                            n[groupIndex].attributes.push({
+                              spec_key: { ar: "", en: "", ku: "" },
+                              spec_value: { ar: "", en: "", ku: "" },
+                            });
                             setForm({ ...form, specifications: n });
                           }}
-                        />
-                        <Input
-                          placeholder={t("products.english", "English")}
-                          dir="ltr"
-                          value={s.spec_key.en}
-                          onChange={(e) => {
-                            const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              spec_key: {
-                                ...n[i].spec_key,
-                                en: e.target.value,
-                              },
-                            };
-                            setForm({ ...form, specifications: n });
-                          }}
-                        />
-                        <Input
-                          placeholder={t("products.kurdish", "کوردی")}
-                          dir="rtl"
-                          className="text-right"
-                          value={s.spec_key.ku}
-                          onChange={(e) => {
-                            const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              spec_key: {
-                                ...n[i].spec_key,
-                                ku: e.target.value,
-                              },
-                            };
-                            setForm({ ...form, specifications: n });
-                          }}
-                        />
-                      </div>
-                      <div className="flex items-center gap-3 pl-12">
-                        <span className="text-xs font-bold text-gray-500 w-16 shrink-0 bg-gray-50 px-2 py-1 rounded text-center border">
-                          {t("products.specValue", "القيمة")}
-                        </span>
-                        <Input
-                          placeholder={t("products.arabic", "عربي")}
-                          value={s.spec_value.ar}
-                          onChange={(e) => {
-                            const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              spec_value: {
-                                ...n[i].spec_value,
-                                ar: e.target.value,
-                              },
-                            };
-                            setForm({ ...form, specifications: n });
-                          }}
-                        />
-                        <Input
-                          placeholder={t("products.english", "English")}
-                          dir="ltr"
-                          value={s.spec_value.en}
-                          onChange={(e) => {
-                            const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              spec_value: {
-                                ...n[i].spec_value,
-                                en: e.target.value,
-                              },
-                            };
-                            setForm({ ...form, specifications: n });
-                          }}
-                        />
-                        <Input
-                          placeholder={t("products.kurdish", "کوردی")}
-                          dir="rtl"
-                          className="text-right"
-                          value={s.spec_value.ku}
-                          onChange={(e) => {
-                            const n = [...form.specifications];
-                            n[i] = {
-                              ...n[i],
-                              spec_value: {
-                                ...n[i].spec_value,
-                                ku: e.target.value,
-                              },
-                            };
-                            setForm({ ...form, specifications: n });
-                          }}
-                        />
+                        >
+                          <Plus className="h-3 w-3 rtl:ml-1 ltr:mr-1" />
+                          {t("products.addAttribute", "إضافة صفة لهذه المجموعة")}
+                        </Button>
                       </div>
                     </div>
                   ))}
