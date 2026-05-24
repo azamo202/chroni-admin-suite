@@ -13,6 +13,7 @@ import { TableSkeleton, EmptyState } from "@/components/shared";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getLocalizedValue, getCategoryPath } from "@/features/products/utils/productHelpers";
+import { getValidImageUrl } from "@/store/helpers";
 
 interface ProductsTableProps {
   paginated: any[];
@@ -80,10 +81,10 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                   className="border-b last:border-0 hover:bg-muted/20 transition-colors"
                 >
                   <td className="px-4 py-3">
-                    {p.image || (p.images && p.images.length > 0) ? (
+                    {p.image_path || p.image || (p.images && p.images.length > 0) ? (
                       <img
-                        src={p.image || p.images[0].url || p.images[0]}
-                        alt="product"
+                        src={getValidImageUrl(p.image_path || p.image || p.images[0].image_path || p.images[0].url || p.images[0])}
+                        alt="Product"
                         className="h-9 w-9 rounded-lg object-cover ring-1 ring-border"
                       />
                     ) : (

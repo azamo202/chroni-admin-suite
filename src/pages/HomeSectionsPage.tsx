@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { useDebounce } from "@/hooks/useDebounce";
+import { getValidImageUrl } from "@/store/helpers";
 
 const getLocalizedValue = (data: any, lang: string = "ar") => {
   const fallback = "بدون اسم";
@@ -401,7 +402,7 @@ export default function HomeSectionsPage() {
                   attachedProducts.map((p: any) => (
                     <div key={p.id} className="flex justify-between items-center bg-white border p-2.5 rounded-lg shadow-sm">
                       <div className="flex items-center gap-3 overflow-hidden">
-                        {p.image || (p.images && p.images.length > 0) ? <img src={p.image || p.images[0].url || p.images[0]} className="w-9 h-9 rounded object-cover border shrink-0" /> : <div className="w-9 h-9 bg-gray-100 rounded flex items-center justify-center shrink-0"><Package className="h-4 w-4 text-gray-400" /></div>}
+                        {p.image_path || p.image || (p.images && p.images.length > 0) ? <img src={getValidImageUrl(p.image_path || p.image || p.images[0]?.image_path || p.images[0]?.url || p.images[0])} className="w-9 h-9 rounded object-cover border shrink-0" /> : <div className="w-9 h-9 bg-gray-100 rounded flex items-center justify-center shrink-0"><Package className="h-4 w-4 text-gray-400" /></div>}
                         <span className="text-sm font-medium text-gray-800 truncate">{getLocalizedValue(p.name, i18n.language)}</span>
                       </div>
                       <Button size="sm" variant="destructive" onClick={() => handleDetach(p.id)} className="h-8 text-xs shrink-0 ltr:ml-2 rtl:mr-2">{t("common.remove", "إزالة")}</Button>
@@ -450,7 +451,7 @@ export default function HomeSectionsPage() {
                       {prods.map((p: any) => (
                         <div key={p.id} className="flex justify-between items-center bg-gray-50 border p-2.5 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className="flex items-center gap-3 overflow-hidden">
-                            {p.image || (p.images && p.images.length > 0) ? <img src={p.image || p.images[0].url || p.images[0]} className="w-9 h-9 rounded object-cover border bg-white shrink-0" /> : <div className="w-9 h-9 bg-white rounded flex items-center justify-center border shrink-0"><Package className="h-4 w-4 text-gray-400" /></div>}
+                            {p.image_path || p.image || (p.images && p.images.length > 0) ? <img src={getValidImageUrl(p.image_path || p.image || p.images[0]?.image_path || p.images[0]?.url || p.images[0])} className="w-9 h-9 rounded object-cover border bg-white shrink-0" /> : <div className="w-9 h-9 bg-white rounded flex items-center justify-center border shrink-0"><Package className="h-4 w-4 text-gray-400" /></div>}
                             <div className="flex flex-col">
                               <span className="text-sm font-medium text-gray-800 truncate">{getLocalizedValue(p.name, i18n.language)}</span>
                               {p.model_number && <span className="text-[10px] text-muted-foreground">{p.model_number}</span>}

@@ -29,6 +29,7 @@ import {
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/config";
 import { Check, Star } from "lucide-react";
+import { getValidImageUrl } from "@/store/helpers";
 
 const groupSpecs = (flatSpecs: any[]) => {
   const grouped: any[] = [];
@@ -866,19 +867,19 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   <div className="flex flex-wrap gap-4">
                     {existingImages.map((img, i) => (
                       <div key={img.id || i} className="relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md">
-                        {img.is_primary && (
+                        {!!Number(img.is_primary) && (
                           <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-yellow-500 hover:bg-yellow-600 z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
                             <Star className="h-3 w-3 fill-white" />
                             {t("products.mainImage", "الرئيسية")}
                           </Badge>
                         )}
                         <img
-                          src={img.url || img.image_path}
+                          src={getValidImageUrl(img.image_path || img.url || img)}
                           alt="product"
                           className="h-24 w-24 object-cover rounded shadow-sm bg-white"
                         />
                         <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity rounded">
-                          {!img.is_primary && (
+                          {!Number(img.is_primary) && (
                             <Button 
                               size="icon" 
                               variant="secondary" 

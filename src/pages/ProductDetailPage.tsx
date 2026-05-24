@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useEffect, useState, useMemo } from 'react';
 import { useProductDetailStore } from '@/store/useProductDetailStore';
+import { getValidImageUrl } from '@/store/helpers';
 import { useCategoryStore } from '@/store/useCategoryStore';
 
 // تم نقل الدالة المساعدة لخارج المكون لتحسين الأداء (تجنب إعادة تعريفها في كل Render)
@@ -47,16 +48,16 @@ export default function ProductDetailPage() {
   // تحديث الصورة النشطة عند تحميل المنتج
   useEffect(() => {
     if (product) {
-      const primary = product.images?.find((img: any) => img.is_primary) || 
+      const primary = product.images?.find((img: any) => !!Number(img.is_primary)) || 
                       (product.images?.length > 0 ? product.images[0] : null);
-      setActiveImage(primary?.url || primary?.image_path || product.image || null);
+      setActiveImage(primary?.url || primary?.image_path || product.image_path || product.image || null);
     }
   }, [product]);
 
   // تجهيز المعرض مع وضع الصورة الأساسية أولاً
   const sortedGallery = useMemo(() => {
     if (!product?.images) return [];
-    return [...product.images].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
+    return [...product.images].sort((a, b) => (Number(b.is_primary) ? 1 : 0) - (Number(a.is_primary) ? 1 : 0));
   }, [product?.images]);
 
   if (loading) {
@@ -140,7 +141,7 @@ export default function ProductDetailPage() {
           <div className="bg-card border rounded-xl overflow-hidden mb-3 shadow-sm group relative">
             {activeImage ? (
                <img 
-                 src={activeImage} 
+                 src={getValidImageUrl(activeImage)} 
                  alt={productName} 
                  className="w-full h-[450px] object-contain bg-white transition-all duration-500" 
                />
@@ -152,7 +153,7 @@ export default function ProductDetailPage() {
             )}
             
             {/* مؤشر الصورة الأساسية في العرض الكبير */}
-            {product.images?.find((img: any) => (img.url || img.image_path) === activeImage)?.is_primary && (
+            {!!Number(product.images?.find((img: any) => (img.url || img.image_path) === activeImage)?.is_primary) && (
               <Badge className="absolute top-4 right-4 bg-primary/90 hover:bg-primary shadow-lg border-none px-3 py-1 text-[11px] backdrop-blur-sm">
                 {t('products.mainImage', 'الصورة الرئيسية')}
               </Badge>
@@ -174,11 +175,11 @@ export default function ProductDetailPage() {
                     }`}
                   >
                     <img 
-                      src={imgUrl} 
+                      src={getValidImageUrl(imgUrl)} 
                       alt={`صورة ${i + 1}`} 
                       className={`h-full w-full object-cover transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-70 hover:opacity-100'}`} 
                     />
-                    {img.is_primary && (
+                    {!!Number(img.is_primary) && (
                       <div className="absolute bottom-0 left-0 right-0 bg-primary/80 text-white text-[9px] text-center py-0.5 font-bold">
                         {t('products.primary', 'أساسية')}
                       </div>
