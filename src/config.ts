@@ -1,3 +1,3 @@
 // هذا الملف يحتوي على الإعدادات العامة للمشروع. 
 // يمكنك تعديل الرابط هنا ليتحدث تلقائياً في جميع ملفات المشروع.
-export const API_BASE_URL = "http://api.chranico.com";
+export const API_BASE_URL = "https://api.chranico.com";

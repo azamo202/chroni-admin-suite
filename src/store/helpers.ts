@@ -16,7 +16,7 @@ export const getValidImageUrl = (path: string | null) => {
   }
 
   // 1. تحديد رابط الباك إند بشكل صريح
-  const backendUrl = 'http://api.chranico.com';
+  const backendUrl = 'https://api.chranico.com';
 
   // 2. تنظيف المسار من أي أخطاء (إزالة storage أو products المكررة)
   cleanPath = cleanPath.replace(/^storage\//, ''); // يحذف storage/ من البداية لو وجدت
