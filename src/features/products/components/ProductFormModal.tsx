@@ -213,6 +213,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 specifications:
                   parsedSpecs.length > 0 ? groupSpecs(parsedSpecs) : prev.specifications,
               }));
+              setExistingImages(full.images || []);
             }
           } catch (err) {
             console.error("Fetch Single Product Error", err);
