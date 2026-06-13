@@ -50,11 +50,11 @@ const SortInput = ({ product, onUpdate }: { product: any, onUpdate: (id: string,
   };
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-2.5 min-w-[120px] mx-auto">
       <Input 
         type="number" 
         min="0"
-        className="w-16 h-8 text-center" 
+        className="w-16 h-8 text-center border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg transition-all shadow-sm" 
         value={val} 
         onChange={(e) => {
           setVal(e.target.value);
@@ -62,7 +62,11 @@ const SortInput = ({ product, onUpdate }: { product: any, onUpdate: (id: string,
         }} 
       />
       {isChanged && (
-        <Button size="sm" className="h-8 px-2 text-xs" onClick={handleSave}>
+        <Button 
+          size="sm" 
+          className="h-8 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 animate-in fade-in slide-in-from-left-1" 
+          onClick={handleSave}
+        >
           حفظ
         </Button>
       )}
