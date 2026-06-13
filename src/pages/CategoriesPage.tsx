@@ -99,7 +99,7 @@ const CategoryRow = ({
           </div>
         </td>
         <td className="px-4 py-3.5 text-muted-foreground">
-          {category.sort_order ?? 0}
+          {level === 0 ? (category.sort_order ?? 0) : "-"}
         </td>
         <td className="px-4 py-3.5">
           <Badge
@@ -431,7 +431,14 @@ export default function CategoriesPage() {
               <select
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none focus:ring-1 focus:ring-primary"
                 value={form.parentId}
-                onChange={(e) => setForm({ ...form, parentId: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm(prev => ({
+                    ...prev,
+                    parentId: val,
+                    sortOrder: val ? "0" : prev.sortOrder
+                  }));
+                }}
               >
                 <option value="">
                   {t("categories.noParent", "بدون قسم أب")}
@@ -444,18 +451,20 @@ export default function CategoriesPage() {
               </select>
             </div>
           </div>
-          <div className="space-y-1.5 text-start">
-            <Label className="text-xs font-medium">
-              {t("categories.sortOrder", "الترتيب (الأولوية في الظهور)")}
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              className="h-9"
-              value={form.sortOrder}
-              onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
-            />
-          </div>
+          {form.parentId === "" && (
+            <div className="space-y-1.5 text-start">
+              <Label className="text-xs font-medium">
+                {t("categories.sortOrder", "الترتيب (الأولوية في الظهور)")}
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                className="h-9"
+                value={form.sortOrder}
+                onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
+              />
+            </div>
+          )}
         </div>
       </FormModal>
 
