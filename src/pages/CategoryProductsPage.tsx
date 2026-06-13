@@ -32,29 +32,41 @@ const getLocalizedName = (nameData: any, lang: string = "ar", t?: any) => {
 
 const SortInput = ({ product, onUpdate }: { product: any, onUpdate: (id: string, val: number) => void }) => {
   const [val, setVal] = useState(product.sort_order ?? 0);
+  const [isChanged, setIsChanged] = useState(false);
   
   useEffect(() => { 
-    setVal(product.sort_order ?? 0); 
+    setVal(product.sort_order ?? 0);
+    setIsChanged(false);
   }, [product.sort_order]);
 
-  const handleBlur = () => {
+  const handleSave = () => {
     const numVal = Number(val);
-    if (numVal !== product.sort_order && numVal > 0) {
+    if (numVal !== product.sort_order && numVal >= 0) {
       onUpdate(product.id, numVal);
-    } else if (numVal <= 0) {
-      setVal(product.sort_order ?? 0); // Revert if invalid
+    } else {
+      setVal(product.sort_order ?? 0);
+      setIsChanged(false);
     }
   };
 
   return (
-    <Input 
-      type="number" 
-      min="1"
-      className="w-20 h-8 text-center m-auto" 
-      value={val} 
-      onChange={(e) => setVal(e.target.value)} 
-      onBlur={handleBlur} 
-    />
+    <div className="flex items-center justify-center gap-1">
+      <Input 
+        type="number" 
+        min="0"
+        className="w-16 h-8 text-center" 
+        value={val} 
+        onChange={(e) => {
+          setVal(e.target.value);
+          setIsChanged(Number(e.target.value) !== product.sort_order);
+        }} 
+      />
+      {isChanged && (
+        <Button size="sm" className="h-8 px-2 text-xs" onClick={handleSave}>
+          حفظ
+        </Button>
+      )}
+    </div>
   );
 };
 
@@ -196,15 +208,15 @@ export default function CategoryProductsPage() {
               ) : (
                 products.map((product) => {
                   const pName = getLocalizedName(product.name, i18n.language, t);
-                  const primaryImage = product.images?.find((img: any) => img.is_primary)?.image_path 
-                    || product.images?.[0]?.image_path;
+                  const primaryImageUrl = product.images?.find((img: any) => img.is_primary)?.url 
+                    || product.images?.[0]?.url;
 
                   return (
                     <tr key={product.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                       <td className="px-4 py-3">
-                        {primaryImage ? (
+                        {primaryImageUrl ? (
                           <img
-                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/storage/${primaryImage}`}
+                            src={primaryImageUrl}
                             alt={pName}
                             className="h-10 w-10 rounded-lg object-cover ring-1 ring-border shadow-sm"
                           />
