@@ -95,6 +95,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [newPrimaryIndex, setNewPrimaryIndex] = useState<number | null>(null);
 
+  // HTML5 Drag and Drop states
+  const [draggedImg, setDraggedImg] = useState<any>(null);
+  const [draggedNewImg, setDraggedNewImg] = useState<File | null>(null);
+
   const handleSetPrimary = async (imageId: number) => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -142,6 +146,76 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     } catch (err) {
       toast.error(t('common.error', 'حدث خطأ في العملية'));
     }
+  };
+
+  // Handlers for existing images
+  const handleDragStartExisting = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    setDraggedImg(existingImages[index]);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOverExisting = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    const draggedOverImg = existingImages[index];
+    if (draggedImg === draggedOverImg || !draggedImg) return;
+
+    const items = existingImages.filter((item) => item !== draggedImg);
+    items.splice(index, 0, draggedImg);
+    setExistingImages(items);
+  };
+
+  const handleDragEndExisting = async () => {
+    setDraggedImg(null);
+    if (!editingProduct) return;
+    try {
+      const token = localStorage.getItem("admin_token");
+      const imageIds = existingImages.map((img) => img.id);
+      const res = await fetch(`${API_BASE_URL}/api/products/${editingProduct.id}/reorder-images`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ image_ids: imageIds }),
+      });
+      const json = await res.json();
+      if (json.status) {
+        toast.success(t("products.orderUpdated", "تم تحديث ترتيب الصور بنجاح"));
+      } else {
+        toast.error(json.message);
+      }
+    } catch (err) {
+      toast.error(t("common.error", "حدث خطأ في العملية"));
+    }
+  };
+
+  // Handlers for new images
+  const handleDragStartNew = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    setDraggedNewImg(form.images[index]);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOverNew = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    const draggedOverImg = form.images[index];
+    if (draggedNewImg === draggedOverImg || !draggedNewImg) return;
+
+    const items = form.images.filter((item) => item !== draggedNewImg);
+    items.splice(index, 0, draggedNewImg);
+    
+    let updatedPrimaryIndex = newPrimaryIndex;
+    if (newPrimaryIndex !== null) {
+      const primaryImg = form.images[newPrimaryIndex];
+      updatedPrimaryIndex = items.indexOf(primaryImg);
+    }
+    
+    setForm({ ...form, images: items });
+    setNewPrimaryIndex(updatedPrimaryIndex);
+  };
+
+  const handleDragEndNew = () => {
+    setDraggedNewImg(null);
   };
 
   useEffect(() => {
@@ -867,7 +941,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   </h4>
                   <div className="flex flex-wrap gap-4">
                     {existingImages.map((img, i) => (
-                      <div key={img.id || i} className="relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md">
+                      <div 
+                        key={img.id || i} 
+                        className={`relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md cursor-grab active:cursor-grabbing ${draggedImg === img ? 'opacity-50 border-primary border-dashed' : ''}`}
+                        draggable
+                        onDragStart={(e) => handleDragStartExisting(e, i)}
+                        onDragOver={(e) => handleDragOverExisting(e, i)}
+                        onDragEnd={handleDragEndExisting}
+                      >
                         {!!Number(img.is_primary) && (
                           <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-yellow-500 hover:bg-yellow-600 z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
                             <Star className="h-3 w-3 fill-white" />
@@ -919,7 +1000,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                       return (
                       <div
                         key={i}
-                        className="relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md"
+                        className={`relative group border rounded-lg p-1 bg-gray-50 transition-all hover:shadow-md cursor-grab active:cursor-grabbing ${draggedNewImg === img ? 'opacity-50 border-primary border-dashed' : ''}`}
+                        draggable
+                        onDragStart={(e) => handleDragStartNew(e, i)}
+                        onDragOver={(e) => handleDragOverNew(e, i)}
+                        onDragEnd={handleDragEndNew}
                       >
                         {isPrimary && (
                           <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-primary z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
