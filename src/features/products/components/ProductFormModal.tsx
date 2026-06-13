@@ -112,10 +112,35 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       const json = await res.json();
       if (json.status) {
         toast.success(t('products.primarySetSuccess', 'تم تعيين الصورة كصورة رئيسية'));
-        setExistingImages(prev => prev.map(img => ({
+        
+        // Move primary image to first position in existingImages list
+        const updatedImages = existingImages.map(img => ({
           ...img,
           is_primary: img.id === imageId
-        })));
+        }));
+        
+        const primaryImg = updatedImages.find(img => img.id === imageId);
+        let finalImages = updatedImages;
+        if (primaryImg) {
+          const rest = updatedImages.filter(img => img.id !== imageId);
+          finalImages = [primaryImg, ...rest];
+        }
+        
+        setExistingImages(finalImages);
+
+        // Update sorting order in backend
+        if (editingProduct) {
+          const imageIds = finalImages.map((img) => img.id);
+          await fetch(`${API_BASE_URL}/api/products/${editingProduct.id}/reorder-images`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ image_ids: imageIds }),
+          });
+        }
       } else {
         toast.error(json.message);
       }
@@ -1029,7 +1054,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                               size="icon" 
                               variant="secondary" 
                               className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 text-white border-none"
-                              onClick={() => setNewPrimaryIndex(i)}
+                              onClick={() => {
+                                const items = [...form.images];
+                                const primaryImg = items[i];
+                                items.splice(i, 1);
+                                items.unshift(primaryImg);
+                                setForm({ ...form, images: items });
+                                setNewPrimaryIndex(0);
+                              }}
                               title={t('products.setAsPrimary', 'تعيين كصورة رئيسية')}
                             >
                               <Check className="h-4 w-4" />
