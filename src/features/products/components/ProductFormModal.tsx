@@ -949,6 +949,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                         onDragOver={(e) => handleDragOverExisting(e, i)}
                         onDragEnd={handleDragEndExisting}
                       >
+                        <div className="absolute top-1.5 left-1.5 bg-black/70 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-10">
+                          {i + 1}
+                        </div>
                         {!!Number(img.is_primary) && (
                           <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-yellow-500 hover:bg-yellow-600 z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
                             <Star className="h-3 w-3 fill-white" />
@@ -1006,6 +1009,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                         onDragOver={(e) => handleDragOverNew(e, i)}
                         onDragEnd={handleDragEndNew}
                       >
+                        <div className="absolute top-1.5 left-1.5 bg-black/70 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-10">
+                          {i + 1}
+                        </div>
                         {isPrimary && (
                           <Badge className="absolute -top-2.5 -right-2.5 text-[10px] bg-primary z-10 px-2 py-0.5 flex gap-1 items-center shadow-sm">
                             <Star className="h-3 w-3 fill-white" />
