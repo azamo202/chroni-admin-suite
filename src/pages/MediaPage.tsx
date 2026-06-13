@@ -54,17 +54,17 @@ export default function MediaPage() {
   const [isCenterModalOpen, setIsCenterModalOpen] = useState(false);
   const [editingCenter, setEditingCenter] = useState<MaintenanceCenter | null>(null);
   const [deleteCenterId, setDeleteCenterId] = useState<number | null>(null);
-  const [centerForm, setCenterForm] = useState<{ nameAr: string, nameEn: string, nameKu: string, cityAr: string, cityEn: string, cityKu: string, phone: string[], addressAr: string, addressEn: string, addressKu: string, locationLink: string }>({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '' });
+  const [centerForm, setCenterForm] = useState<{ nameAr: string, nameEn: string, nameKu: string, cityAr: string, cityEn: string, cityKu: string, phone: string[], addressAr: string, addressEn: string, addressKu: string, locationLink: string, sortOrder: string }>({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '', sortOrder: '0' });
 
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<SupportVideo | null>(null);
   const [deleteVideoId, setDeleteVideoId] = useState<number | null>(null);
-  const [videoForm, setVideoForm] = useState({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '' });
+  const [videoForm, setVideoForm] = useState({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '', sortOrder: '0' });
 
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [editingDownload, setEditingDownload] = useState<SupportDownload | null>(null);
   const [deleteDownloadId, setDeleteDownloadId] = useState<number | null>(null);
-  const [downloadForm, setDownloadForm] = useState<{ titleAr: string, titleEn: string, titleKu: string, file: File | null }>({ titleAr: '', titleEn: '', titleKu: '', file: null });
+  const [downloadForm, setDownloadForm] = useState<{ titleAr: string, titleEn: string, titleKu: string, file: File | null, sortOrder: string }>({ titleAr: '', titleEn: '', titleKu: '', file: null, sortOrder: '0' });
 
   useEffect(() => {
     fetchData();
@@ -125,7 +125,7 @@ export default function MediaPage() {
   // --- معالجات مراكز الصيانة ---
   const openAddCenter = () => {
     setEditingCenter(null);
-    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '' });
+    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '', sortOrder: '0' });
     setIsCenterModalOpen(true);
   };
 
@@ -154,7 +154,8 @@ export default function MediaPage() {
       cityAr: city.ar, cityEn: city.en, cityKu: city.ku,
       phone: phoneArray,
       addressAr: address.ar, addressEn: address.en, addressKu: address.ku,
-      locationLink: center.location_link || ''
+      locationLink: center.location_link || '',
+      sortOrder: center.sort_order !== undefined ? String(center.sort_order) : '0'
     });
     setIsCenterModalOpen(true);
   };
@@ -166,7 +167,8 @@ export default function MediaPage() {
       city: { ar: centerForm.cityAr, en: centerForm.cityEn, ku: centerForm.cityKu },
       phone: centerForm.phone,
       address: { ar: centerForm.addressAr, en: centerForm.addressEn, ku: centerForm.addressKu },
-      location_link: centerForm.locationLink
+      location_link: centerForm.locationLink,
+      sort_order: centerForm.sortOrder
     };
 
     const res = editingCenter 
@@ -193,7 +195,7 @@ export default function MediaPage() {
   // --- معالجات فيديوهات الدعم ---
   const openAddVideo = () => {
     setEditingVideo(null);
-    setVideoForm({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '' });
+    setVideoForm({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '', sortOrder: '0' });
     setIsVideoModalOpen(true);
   };
 
@@ -204,7 +206,8 @@ export default function MediaPage() {
       titleAr: title.ar || (video as any).title_ar || '',
       titleEn: title.en || (video as any).title_en || '',
       titleKu: title.ku || (video as any).title_ku || '',
-      youtubeUrl: video.youtube_url || video.url || video.video_url || ''
+      youtubeUrl: video.youtube_url || video.url || video.video_url || '',
+      sortOrder: video.sort_order !== undefined ? String(video.sort_order) : '0'
     });
     setIsVideoModalOpen(true);
   };
@@ -213,7 +216,8 @@ export default function MediaPage() {
     setIsSubmitting(true);
     const payload = {
       title: { ar: videoForm.titleAr, en: videoForm.titleEn, ku: videoForm.titleKu },
-      youtube_url: videoForm.youtubeUrl
+      youtube_url: videoForm.youtubeUrl,
+      sort_order: videoForm.sortOrder
     };
 
     const res = editingVideo 
@@ -240,7 +244,7 @@ export default function MediaPage() {
   // --- معالجات الملفات والكتالوجات ---
   const openAddDownload = () => {
     setEditingDownload(null);
-    setDownloadForm({ titleAr: '', titleEn: '', titleKu: '', file: null });
+    setDownloadForm({ titleAr: '', titleEn: '', titleKu: '', file: null, sortOrder: '0' });
     setIsDownloadModalOpen(true);
   };
 
@@ -251,7 +255,8 @@ export default function MediaPage() {
       titleAr: title.ar || '',
       titleEn: title.en || '',
       titleKu: title.ku || '',
-      file: null
+      file: null,
+      sortOrder: download.sort_order !== undefined ? String(download.sort_order) : '0'
     });
     setIsDownloadModalOpen(true);
   };
@@ -262,6 +267,7 @@ export default function MediaPage() {
     formData.append("title[ar]", downloadForm.titleAr);
     formData.append("title[en]", downloadForm.titleEn);
     formData.append("title[ku]", downloadForm.titleKu);
+    formData.append("sort_order", downloadForm.sortOrder);
     if (downloadForm.file) formData.append("file", downloadForm.file);
 
     const res = editingDownload 
@@ -360,6 +366,7 @@ export default function MediaPage() {
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.phone', 'رقم الهاتف')}</th>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.city', 'المدينة')}</th>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.address', 'العنوان')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.sortOrder', 'الترتيب')}</th>
                   <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.actions', 'الإجراءات')}</th>
                 </tr>
               )}
@@ -367,6 +374,7 @@ export default function MediaPage() {
                 <tr>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.videoTitle', 'عنوان الفيديو')}</th>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.link', 'الرابط')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.sortOrder', 'الترتيب')}</th>
                   <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.actions', 'الإجراءات')}</th>
                 </tr>
               )}
@@ -374,6 +382,7 @@ export default function MediaPage() {
                 <tr>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.fileName', 'عنوان الملف')}</th>
                   <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('media.downloadLink', 'رابط التحميل')}</th>
+                  <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.sortOrder', 'الترتيب')}</th>
                   <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase">{t('common.actions', 'الإجراءات')}</th>
                 </tr>
               )}
@@ -396,6 +405,7 @@ export default function MediaPage() {
                         </td>
                         <td className="px-4 py-3.5 text-muted-foreground">{getLocalizedValue((center as any).city, i18n.language) || '-'}</td>
                         <td className="px-4 py-3.5 text-muted-foreground">{getLocalizedValue(center.address, i18n.language) || center.address || '-'}</td>
+                        <td className="px-4 py-3.5 text-muted-foreground">{center.sort_order ?? 0}</td>
                         <td className="px-4 py-3.5 text-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -421,6 +431,7 @@ export default function MediaPage() {
                             {t('media.watchVideo', 'عرض الفيديو')}
                           </a>
                         </td>
+                        <td className="px-4 py-3.5 text-muted-foreground">{video.sort_order ?? 0}</td>
                         <td className="px-4 py-3.5 text-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -444,6 +455,7 @@ export default function MediaPage() {
                         <td className="px-4 py-3.5">
                           <a href={file.file_url || file.url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">{t('media.downloadFile', 'تحميل الملف')}</a>
                         </td>
+                        <td className="px-4 py-3.5 text-muted-foreground">{file.sort_order ?? 0}</td>
                         <td className="px-4 py-3.5 text-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -528,6 +540,10 @@ export default function MediaPage() {
             <Label className="text-xs font-medium">{t('media.locationLink', 'رابط الموقع (Google Maps)')}</Label>
             <Input className="h-9 text-left" type="url" value={centerForm.locationLink} onChange={e => setCenterForm({...centerForm, locationLink: e.target.value})} dir="ltr" />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t('common.sortOrder', 'الترتيب (الأولوية)')}</Label>
+            <Input className="h-9" type="number" min="0" value={centerForm.sortOrder} onChange={e => setCenterForm({...centerForm, sortOrder: e.target.value})} />
+          </div>
         </div>
       </FormModal>
 
@@ -542,6 +558,10 @@ export default function MediaPage() {
             <Label className="text-xs font-medium">{t('media.youtubeUrl', 'رابط يوتيوب (YouTube URL)')}</Label>
             <Input className="h-9 text-left" type="url" placeholder="https://www.youtube.com/watch?v=..." value={videoForm.youtubeUrl} onChange={e => setVideoForm({...videoForm, youtubeUrl: e.target.value})} dir="ltr" required />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t('common.sortOrder', 'الترتيب (الأولوية)')}</Label>
+            <Input className="h-9" type="number" min="0" value={videoForm.sortOrder} onChange={e => setVideoForm({...videoForm, sortOrder: e.target.value})} />
+          </div>
         </div>
       </FormModal>
 
@@ -555,6 +575,10 @@ export default function MediaPage() {
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t('media.uploadFile', 'رفع الملف (PDF, DOC, الخ)')}</Label>
             <Input type="file" className="cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all h-9" onChange={e => setDownloadForm({...downloadForm, file: e.target.files?.[0] || null})} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t('common.sortOrder', 'الترتيب (الأولوية)')}</Label>
+            <Input className="h-9" type="number" min="0" value={downloadForm.sortOrder} onChange={e => setDownloadForm({...downloadForm, sortOrder: e.target.value})} />
           </div>
         </div>
       </FormModal>

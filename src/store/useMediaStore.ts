@@ -10,6 +10,7 @@ export interface MaintenanceCenter {
   phone_number?: string | string[];
   address: any;
   location_link?: string;
+  sort_order?: number;
 }
 
 export interface SupportVideo {
@@ -18,6 +19,7 @@ export interface SupportVideo {
   youtube_url?: string;
   url?: string;
   video_url?: string;
+  sort_order?: number;
 }
 
 export interface SupportDownload {
@@ -26,6 +28,7 @@ export interface SupportDownload {
   name?: any;
   file_url?: string;
   url?: string;
+  sort_order?: number;
 }
 
 interface MediaState {

@@ -98,6 +98,9 @@ const CategoryRow = ({
             <span>{catName}</span>
           </div>
         </td>
+        <td className="px-4 py-3.5 text-muted-foreground">
+          {category.sort_order ?? 0}
+        </td>
         <td className="px-4 py-3.5">
           <Badge
             variant={category.is_active ? "default" : "secondary"}
@@ -173,6 +176,7 @@ export default function CategoriesPage() {
     nameKu: "",
     isActive: "1",
     parentId: "",
+    sortOrder: "0",
     image: null,
   };
   const [form, setForm] = useState<CategoryFormData>(initialFormState);
@@ -234,6 +238,7 @@ export default function CategoriesPage() {
       nameKu: parsed?.ku || (c as any).name_ku || (c as any)["name.ku"] || "",
       isActive: String(Number(c.is_active ?? 1)),
       parentId: c.parent_id ? String(c.parent_id) : "",
+      sortOrder: c.sort_order !== undefined ? String(c.sort_order) : "0",
       image: null,
     });
     setModalOpen(true);
@@ -306,6 +311,9 @@ export default function CategoriesPage() {
                   {t("categories.name")}
                 </th>
                 <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
+                  {t("categories.sortOrder", "الترتيب")}
+                </th>
+                <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
                   {t("categories.status", "الحالة")}
                 </th>
                 <th className="text-end px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
@@ -315,10 +323,10 @@ export default function CategoriesPage() {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton cols={4} />
+                <TableSkeleton cols={5} />
               ) : categories.length === 0 ? (
                 <tr>
-                  <td colSpan={4}>
+                  <td colSpan={5}>
                     <EmptyState message={t("common.noResults")} />
                   </td>
                 </tr>
@@ -435,6 +443,18 @@ export default function CategoriesPage() {
                 ))}
               </select>
             </div>
+          </div>
+          <div className="space-y-1.5 text-start">
+            <Label className="text-xs font-medium">
+              {t("categories.sortOrder", "الترتيب (الأولوية في الظهور)")}
+            </Label>
+            <Input
+              type="number"
+              min="0"
+              className="h-9"
+              value={form.sortOrder}
+              onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
+            />
           </div>
         </div>
       </FormModal>

@@ -7,6 +7,7 @@ export interface Category {
   image: string | null;
   is_active: number | boolean;
   parent_id: string | number | null;
+  sort_order?: number;
   children?: Category[];
 }
 
@@ -16,6 +17,7 @@ export interface CategoryFormData {
   nameKu: string;
   isActive: string;
   parentId: string;
+  sortOrder: string;
   image: File | null;
 }
 
@@ -67,6 +69,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       formData.append("name[ku]", data.nameKu || data.nameAr);
       formData.append("is_active", data.isActive);
       formData.append("parent_id", data.parentId || "");
+      formData.append("sort_order", data.sortOrder || "0");
       if (data.image) formData.append("image", data.image);
 
       const res = await fetch(`${apiUrl}/api/categories`, {
@@ -102,6 +105,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       formData.append("name[ku]", data.nameKu || data.nameAr);
       formData.append("is_active", data.isActive);
       formData.append("parent_id", data.parentId || ""); // إرسال القيمة الفارغة لكي يقوم الخادم بجعلها Null
+      formData.append("sort_order", data.sortOrder || "0");
       if (data.image) formData.append("image", data.image);
       
       // تم التصحيح: Laravel يحتاج PUT مع FormData وليس POST
