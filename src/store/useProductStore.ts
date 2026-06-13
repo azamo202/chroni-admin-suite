@@ -12,6 +12,8 @@ interface ProductState {
   createProduct: (data: FormData) => Promise<{ success: boolean; message?: string }>;
   updateProduct: (id: string | number, data: FormData) => Promise<{ success: boolean; message?: string }>;
   deleteProduct: (id: string | number) => Promise<{ success: boolean; message?: string }>;
+  updateSortOrder: (id: string | number, sortOrder: number) => Promise<{ success: boolean; message?: string }>;
+  autoReorderProducts: (categoryId: string | number) => Promise<{ success: boolean; message?: string }>;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
@@ -147,6 +149,56 @@ export const useProductStore = create<ProductState>((set, get) => ({
       return { success: false, message: "فشل في حذف المنتج" };
     } catch (err) {
       console.error("Delete Product Error:", err);
+      return { success: false, message: "حدث خطأ في الاتصال بالخادم" };
+    }
+  },
+
+  updateSortOrder: async (id, sortOrder) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const apiUrl = API_BASE_URL;
+      
+      const res = await fetch(`${apiUrl}/api/products/${id}/sort`, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Content-Type": "application/json",
+          "Accept": "application/json" 
+        },
+        body: JSON.stringify({ sort_order: sortOrder })
+      });
+      
+      const json = await res.json();
+      if (res.ok && json.status) {
+        return { success: true, message: json.message };
+      }
+      return { success: false, message: json.message || "فشل في تحديث الترتيب" };
+    } catch (err) {
+      console.error("Update Sort Order Error:", err);
+      return { success: false, message: "حدث خطأ في الاتصال بالخادم" };
+    }
+  },
+
+  autoReorderProducts: async (categoryId) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const apiUrl = API_BASE_URL;
+      
+      const res = await fetch(`${apiUrl}/api/categories/${categoryId}/products/auto-reorder`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Accept": "application/json" 
+        }
+      });
+      
+      const json = await res.json();
+      if (res.ok && json.status) {
+        return { success: true, message: json.message };
+      }
+      return { success: false, message: json.message || "فشل في إعادة الترتيب" };
+    } catch (err) {
+      console.error("Auto Reorder Error:", err);
       return { success: false, message: "حدث خطأ في الاتصال بالخادم" };
     }
   }

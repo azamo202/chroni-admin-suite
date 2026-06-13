@@ -1,11 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Pencil,
   Trash2,
   MoreHorizontal,
+  MoreHorizontal,
   Image as ImageIcon,
+  List,
 } from "lucide-react";
 import {
   useCategoryStore,
@@ -68,6 +71,7 @@ const CategoryRow = ({
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === "rtl";
   const catName = getLocalizedName(category.name, i18n.language, t);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -122,7 +126,12 @@ const CategoryRow = ({
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-36">
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => navigate(`/categories/${category.id}/products`)}>
+                <List className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />
+                {t("categories.manageProducts", "إدارة المنتجات")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onEdit(category)}>
                 <Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />
                 {t("common.edit")}
@@ -216,7 +225,15 @@ export default function CategoriesPage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm(initialFormState);
+    const mainCategories = categories.filter(c => !c.parent_id);
+    const maxSort = mainCategories.reduce((max, c) => {
+      const currentSort = c.sort_order !== undefined ? Number(c.sort_order) : 0;
+      return currentSort > max ? currentSort : max;
+    }, 0);
+    setForm({
+      ...initialFormState,
+      sortOrder: String(maxSort + 1),
+    });
     setModalOpen(true);
   };
 

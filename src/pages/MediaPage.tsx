@@ -125,7 +125,11 @@ export default function MediaPage() {
   // --- معالجات مراكز الصيانة ---
   const openAddCenter = () => {
     setEditingCenter(null);
-    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '', sortOrder: '0' });
+    const maxSort = centers.reduce((max, c) => {
+      const currentSort = c.sort_order !== undefined ? Number(c.sort_order) : 0;
+      return currentSort > max ? currentSort : max;
+    }, 0);
+    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '', sortOrder: String(maxSort + 1) });
     setIsCenterModalOpen(true);
   };
 
@@ -195,7 +199,11 @@ export default function MediaPage() {
   // --- معالجات فيديوهات الدعم ---
   const openAddVideo = () => {
     setEditingVideo(null);
-    setVideoForm({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '', sortOrder: '0' });
+    const maxSort = videos.reduce((max, v) => {
+      const currentSort = v.sort_order !== undefined ? Number(v.sort_order) : 0;
+      return currentSort > max ? currentSort : max;
+    }, 0);
+    setVideoForm({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '', sortOrder: String(maxSort + 1) });
     setIsVideoModalOpen(true);
   };
 
@@ -244,7 +252,11 @@ export default function MediaPage() {
   // --- معالجات الملفات والكتالوجات ---
   const openAddDownload = () => {
     setEditingDownload(null);
-    setDownloadForm({ titleAr: '', titleEn: '', titleKu: '', file: null, sortOrder: '0' });
+    const maxSort = downloads.reduce((max, d) => {
+      const currentSort = d.sort_order !== undefined ? Number(d.sort_order) : 0;
+      return currentSort > max ? currentSort : max;
+    }, 0);
+    setDownloadForm({ titleAr: '', titleEn: '', titleKu: '', file: null, sortOrder: String(maxSort + 1) });
     setIsDownloadModalOpen(true);
   };
 

@@ -12,6 +12,7 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
 const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
+const CategoryProductsPage = lazy(() => import("./pages/CategoryProductsPage"));
 const BrandsPage = lazy(() => import("./pages/BrandsPage"));
 const MediaPage = lazy(() => import("./pages/MediaPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
@@ -79,6 +80,7 @@ const App = () => (
               <Route path="/products" element={<ProductsPage />} />
               <Route path="/products/:id" element={<ProductDetailPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/categories/:id/products" element={<CategoryProductsPage />} />
               <Route path="/brands" element={<BrandsPage />} />
               <Route path="/media" element={<MediaPage />} />
               <Route path="/settings" element={<SettingsPage />} />
