@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/config';
 
 export const getValidImageUrl = (path: string | null) => {
   if (!path) return '';
-  
+
   let cleanPath = path;
 
   // إذا كان الرابط يحتوي على النطاق الخاطئ أو نطاق الباك إند، نقوم بإزالته لتنظيف المسار وإعادة بنائه بشكل صحيح
