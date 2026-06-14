@@ -34,7 +34,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       // بناء Query Parameters
       const queryParams = new URLSearchParams();
-      queryParams.append('per_page', '12'); // إخبار الخادم بإرجاع 12 منتج في الصفحة
+      queryParams.append('per_page', '50'); // إخبار الخادم بإرجاع 50 منتج في الصفحة
       if (params?.page) queryParams.append('page', String(params.page));
       if (params?.search) queryParams.append('search', params.search);
       if (params?.category_id && params.category_id !== 'all') queryParams.append('category_id', params.category_id);

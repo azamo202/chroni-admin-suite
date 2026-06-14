@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProductStore } from "@/store/useProductStore";
 import { useCategoryStore } from "@/store/useCategoryStore";
-import { PageHeader, TableSkeleton, EmptyState, ConfirmDialog } from "@/components/shared";
+import { PageHeader, TableSkeleton, EmptyState, ConfirmDialog, SimplePagination } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -81,11 +81,12 @@ export default function CategoryProductsPage() {
   const isRtl = i18n.dir() === "rtl";
   
   const { categories, fetchCategories } = useCategoryStore();
-  const { products, loading, fetchData, deleteProduct, updateSortOrder, autoReorderProducts } = useProductStore();
+  const { products, loading, fetchData, deleteProduct, updateSortOrder, autoReorderProducts, totalPages } = useProductStore();
 
   const [categoryName, setCategoryName] = useState("");
   const [deleteId, setDeleteId] = useState<string | number | null>(null);
   const [isReordering, setIsReordering] = useState(false);
+  const [page, setPage] = useState(1);
 
   // البحث عن اسم القسم
   useEffect(() => {
@@ -108,8 +109,8 @@ export default function CategoryProductsPage() {
   }, [categories, id, i18n.language, t, fetchCategories]);
 
   const loadProducts = useCallback(() => {
-    fetchData({ category_id: id, sort: 'sort_order' }); // Assuming sort param works or backend does it by default
-  }, [fetchData, id]);
+    fetchData({ category_id: id, sort: 'sort_order', page });
+  }, [fetchData, id, page]);
 
   useEffect(() => {
     loadProducts();
@@ -172,6 +173,14 @@ export default function CategoryProductsPage() {
           </div>
         }
       />
+
+      <div className="mb-4 mt-2">
+        <SimplePagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+      </div>
 
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b bg-muted/20 flex justify-between items-center">
