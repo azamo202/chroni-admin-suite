@@ -49,7 +49,7 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'h-screen sticky top-0 bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 ease-in-out z-30',
+        'h-screen sticky top-0 bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 ease-in-out z-30 shrink-0 overflow-x-hidden',
         isRtl ? 'border-l border-sidebar-border' : 'border-r border-sidebar-border',
         collapsed ? 'w-[72px]' : 'w-64' // زيادة بسيطة في عرض الوضع المطوي لإعطاء مساحة مريحة للأيقونات
       )}
