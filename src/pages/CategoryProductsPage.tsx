@@ -198,6 +198,9 @@ export default function CategoryProductsPage() {
                 <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider">
                   {t("products.name", "الاسم")}
                 </th>
+                <th className="text-start px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider w-32">
+                  {t("products.category", "القسم الفرعي")}
+                </th>
                 <th className="text-center px-4 py-3 font-medium text-xs text-muted-foreground uppercase tracking-wider w-32">
                   {t("products.sortOrder", "الترتيب")}
                 </th>
@@ -214,7 +217,7 @@ export default function CategoryProductsPage() {
                 <TableSkeleton cols={5} />
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>
+                  <td colSpan={6}>
                     <EmptyState message={t("common.noResults", "لا توجد نتائج")} />
                   </td>
                 </tr>
@@ -241,6 +244,11 @@ export default function CategoryProductsPage() {
                       </td>
                       <td className="px-4 py-3.5 font-medium text-gray-800">
                         {pName}
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-gray-500">
+                        <Badge variant="outline" className="bg-gray-50">
+                          {getLocalizedName(product.category?.name, i18n.language, t)}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3.5 text-center">
                         <SortInput product={product} onUpdate={handleUpdateSortOrder} />
