@@ -125,11 +125,8 @@ export default function MediaPage() {
   // --- معالجات مراكز الصيانة ---
   const openAddCenter = () => {
     setEditingCenter(null);
-    const maxSort = centers.reduce((max, c) => {
-      const currentSort = c.sort_order !== undefined ? Number(c.sort_order) : 0;
-      return currentSort > max ? currentSort : max;
-    }, 0);
-    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '', sortOrder: String(maxSort + 1) });
+    // اترك الترتيب فارغاً حتى يقوم الباك-إند بتعيينه تلقائياً (آخر مكان)
+    setCenterForm({ nameAr: '', nameEn: '', nameKu: '', cityAr: '', cityEn: '', cityKu: '', phone: [''], addressAr: '', addressEn: '', addressKu: '', locationLink: '', sortOrder: '' });
     setIsCenterModalOpen(true);
   };
 
@@ -159,7 +156,8 @@ export default function MediaPage() {
       phone: phoneArray,
       addressAr: address.ar, addressEn: address.en, addressKu: address.ku,
       locationLink: center.location_link || '',
-      sortOrder: center.sort_order !== undefined ? String(center.sort_order) : '0'
+      // إرسال الترتيب الحالي الحقيقي — '' (فارغ) = يحتفظ الباك-إند بالترتيب دون تغيير
+      sortOrder: center.sort_order != null ? String(center.sort_order) : ''
     });
     setIsCenterModalOpen(true);
   };
@@ -199,11 +197,8 @@ export default function MediaPage() {
   // --- معالجات فيديوهات الدعم ---
   const openAddVideo = () => {
     setEditingVideo(null);
-    const maxSort = videos.reduce((max, v) => {
-      const currentSort = v.sort_order !== undefined ? Number(v.sort_order) : 0;
-      return currentSort > max ? currentSort : max;
-    }, 0);
-    setVideoForm({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '', sortOrder: String(maxSort + 1) });
+    // اترك الترتيب فارغاً حتى يقوم الباك-إند بتعيينه تلقائياً (آخر مكان)
+    setVideoForm({ titleAr: '', titleEn: '', titleKu: '', youtubeUrl: '', sortOrder: '' });
     setIsVideoModalOpen(true);
   };
 
@@ -215,7 +210,8 @@ export default function MediaPage() {
       titleEn: title.en || (video as any).title_en || '',
       titleKu: title.ku || (video as any).title_ku || '',
       youtubeUrl: video.youtube_url || video.url || video.video_url || '',
-      sortOrder: video.sort_order !== undefined ? String(video.sort_order) : '0'
+      // إرسال الترتيب الحالي الحقيقي — '' (فارغ) = يحتفظ الباك-إند بالترتيب دون تغيير
+      sortOrder: video.sort_order != null ? String(video.sort_order) : ''
     });
     setIsVideoModalOpen(true);
   };
@@ -252,11 +248,8 @@ export default function MediaPage() {
   // --- معالجات الملفات والكتالوجات ---
   const openAddDownload = () => {
     setEditingDownload(null);
-    const maxSort = downloads.reduce((max, d) => {
-      const currentSort = d.sort_order !== undefined ? Number(d.sort_order) : 0;
-      return currentSort > max ? currentSort : max;
-    }, 0);
-    setDownloadForm({ titleAr: '', titleEn: '', titleKu: '', file: null, sortOrder: String(maxSort + 1) });
+    // اترك الترتيب فارغاً حتى يقوم الباك-إند بتعيينه تلقائياً (آخر مكان)
+    setDownloadForm({ titleAr: '', titleEn: '', titleKu: '', file: null, sortOrder: '' });
     setIsDownloadModalOpen(true);
   };
 
@@ -268,7 +261,8 @@ export default function MediaPage() {
       titleEn: title.en || '',
       titleKu: title.ku || '',
       file: null,
-      sortOrder: download.sort_order !== undefined ? String(download.sort_order) : '0'
+      // إرسال الترتيب الحالي الحقيقي — '' (فارغ) = يحتفظ الباك-إند بالترتيب دون تغيير
+      sortOrder: download.sort_order != null ? String(download.sort_order) : ''
     });
     setIsDownloadModalOpen(true);
   };

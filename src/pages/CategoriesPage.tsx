@@ -6,7 +6,6 @@ import {
   Pencil,
   Trash2,
   MoreHorizontal,
-  MoreHorizontal,
   Image as ImageIcon,
   List,
 } from "lucide-react";
@@ -255,7 +254,9 @@ export default function CategoriesPage() {
       nameKu: parsed?.ku || (c as any).name_ku || (c as any)["name.ku"] || "",
       isActive: String(Number(c.is_active ?? 1)),
       parentId: c.parent_id ? String(c.parent_id) : "",
-      sortOrder: c.sort_order !== undefined ? String(c.sort_order) : "0",
+      // إرسال الترتيب الحالي الحقيقي — نستخدم '' (فارغ) إذا كان غير محدد
+      // حتى يحتفظ الباك-إند بالترتيب الحالي دون تغيير
+      sortOrder: c.sort_order != null ? String(c.sort_order) : "",
       image: null,
     });
     setModalOpen(true);

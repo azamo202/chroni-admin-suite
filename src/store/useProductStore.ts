@@ -79,7 +79,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const apiUrl = API_BASE_URL;
       
       const res = await fetch(`${apiUrl}/api/products`, {
-        method: "POST", // FormData دائماً مع POST
+        method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`, 
           "Accept": "application/json" 
@@ -90,7 +90,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const json = await res.json();
       
       if (res.ok || json.status) {
-        // لم نعد بحاجة للاستدعاء اليدوي هنا لأن React Query سيتكفل به مع الحفاظ على الصفحة الحالية
+        // نعيد تحميل البيانات من الخادم لعرض sort_order الصحيح المعين من الباك-إند
+        await get().fetchData();
         return { success: true };
       }
       return { success: false, message: json.message || "حدث خطأ أثناء إضافة المنتج" };
@@ -142,8 +143,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
       });
       
       if (res.ok) {
-        // تحديث محلي سريع (Optimistic Update)
-        set((state) => ({ products: state.products.filter((p: any) => p.id !== id) }));
+        // نعيد تحميل البيانات من الخادم لعرض قيم sort_order المحدثة بعد الحذف
+        // (الباك-إند يعيد ترقيم العناصر تلقائياً عند الحذف)
+        await get().fetchData();
         return { success: true };
       }
       return { success: false, message: "فشل في حذف المنتج" };

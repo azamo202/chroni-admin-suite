@@ -69,7 +69,8 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       formData.append("name[ku]", data.nameKu || data.nameAr);
       formData.append("is_active", data.isActive);
       formData.append("parent_id", data.parentId || "");
-      formData.append("sort_order", data.sortOrder || "0");
+      // إرسال sort_order كما هو — القيمة الفارغة تعني "آخر مكان" للباك-إند
+      formData.append("sort_order", data.sortOrder ?? "");
       if (data.image) formData.append("image", data.image);
 
       const res = await fetch(`${apiUrl}/api/categories`, {
@@ -105,7 +106,8 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       formData.append("name[ku]", data.nameKu || data.nameAr);
       formData.append("is_active", data.isActive);
       formData.append("parent_id", data.parentId || ""); // إرسال القيمة الفارغة لكي يقوم الخادم بجعلها Null
-      formData.append("sort_order", data.sortOrder || "0");
+      // إرسال sort_order كما هو — القيمة الفارغة تعني "احتفظ بالترتيب الحالي" للباك-إند
+      formData.append("sort_order", data.sortOrder ?? "");
       if (data.image) formData.append("image", data.image);
       
       // تم التصحيح: Laravel يحتاج PUT مع FormData وليس POST
