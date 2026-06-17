@@ -543,7 +543,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     onChange={(e) =>
                       setForm({ ...form, modelNumber: e.target.value })
                     }
-                    className="bg-white uppercase shadow-sm"
+                    className="bg-white shadow-sm"
                     dir="ltr"
                   />
                 </div>

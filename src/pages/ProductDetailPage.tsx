@@ -225,7 +225,7 @@ export default function ProductDetailPage() {
               </div>
               <div>
               <span className="text-xs text-muted-foreground block mb-1">{t('products.modelNumberLabel', 'رقم الموديل')}</span>
-                <span className="font-medium text-gray-800 uppercase tracking-wide">{product.model_number || '-'}</span>
+                <span className="font-medium text-gray-800 tracking-wide">{product.model_number || '-'}</span>
               </div>
               <div>
               <span className="text-xs text-muted-foreground block mb-1">{t('products.originCountryLabel', 'بلد المنشأ')}</span>
