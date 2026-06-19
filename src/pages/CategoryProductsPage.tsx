@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useProductStore } from "@/store/useProductStore";
 import { useCategoryStore } from "@/store/useCategoryStore";
@@ -151,6 +151,43 @@ export default function CategoryProductsPage() {
     setDeleteId(null);
   };
 
+  const groupedProducts = useMemo(() => {
+    const groups: Record<string, { categoryName: string, categoryId: string, products: any[] }> = {};
+    
+    const mainIdStr = String(id);
+    groups[mainIdStr] = {
+      categoryName: t("categories.mainCategoryProducts", "المنتجات الأساسية للتصنيف"),
+      categoryId: mainIdStr,
+      products: []
+    };
+
+    products.forEach(product => {
+      const productCatId = String(product.category_id || product.category?.id || mainIdStr);
+      
+      if (!groups[productCatId]) {
+        groups[productCatId] = {
+          categoryName: getLocalizedName(product.category?.name, i18n.language, t),
+          categoryId: productCatId,
+          products: []
+        };
+      }
+      groups[productCatId].products.push(product);
+    });
+
+    const result = [];
+    if (groups[mainIdStr].products.length > 0) {
+      result.push(groups[mainIdStr]);
+    }
+    
+    Object.keys(groups).forEach(key => {
+      if (key !== mainIdStr && groups[key].products.length > 0) {
+        result.push(groups[key]);
+      }
+    });
+
+    return result;
+  }, [products, id, i18n.language, t]);
+
   return (
     <>
       <PageHeader
@@ -222,74 +259,83 @@ export default function CategoryProductsPage() {
                   </td>
                 </tr>
               ) : (
-                products.map((product) => {
-                  const pName = getLocalizedName(product.name, i18n.language, t);
-                  const primaryImageUrl = product.images?.find((img: any) => img.is_primary)?.url 
-                    || product.images?.[0]?.url;
-
-                  return (
-                    <tr key={product.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3">
-                        {primaryImageUrl ? (
-                          <img
-                            src={primaryImageUrl}
-                            alt={pName}
-                            className="h-10 w-10 rounded-lg object-cover ring-1 ring-border shadow-sm"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3.5 font-medium text-gray-800">
-                        {pName}
-                      </td>
-                      <td className="px-4 py-3.5 text-xs text-gray-500">
-                        <Badge variant="outline" className="bg-gray-50">
-                          {getLocalizedName(product.category?.name, i18n.language, t)}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <SortInput product={product} onUpdate={handleUpdateSortOrder} />
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <Badge
-                          variant={product.is_active ? "default" : "secondary"}
-                          className={
-                            product.is_active
-                              ? "bg-green-50 text-green-700 border-0"
-                              : "bg-muted text-muted-foreground"
-                          }
-                        >
-                          {product.is_active
-                            ? t("common.active", "مفعل")
-                            : t("common.inactive", "غير مفعل")}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3.5 text-end">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => navigate(`/products/${product.id}`)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => setDeleteId(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                groupedProducts.map((group) => (
+                  <Fragment key={group.categoryId}>
+                    <tr className="bg-muted/50 border-b">
+                      <td colSpan={6} className="px-4 py-3 font-semibold text-primary/90 text-sm">
+                        {group.categoryName}
                       </td>
                     </tr>
-                  );
-                })
+                    {group.products.map((product) => {
+                      const pName = getLocalizedName(product.name, i18n.language, t);
+                      const primaryImageUrl = product.images?.find((img: any) => img.is_primary)?.url 
+                        || product.images?.[0]?.url;
+
+                      return (
+                        <tr key={product.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                          <td className="px-4 py-3">
+                            {primaryImageUrl ? (
+                              <img
+                                src={primaryImageUrl}
+                                alt={pName}
+                                className="h-10 w-10 rounded-lg object-cover ring-1 ring-border shadow-sm"
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3.5 font-medium text-gray-800">
+                            {pName}
+                          </td>
+                          <td className="px-4 py-3.5 text-xs text-gray-500">
+                            <Badge variant="outline" className="bg-gray-50">
+                              {getLocalizedName(product.category?.name, i18n.language, t)}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <SortInput product={product} onUpdate={handleUpdateSortOrder} />
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <Badge
+                              variant={product.is_active ? "default" : "secondary"}
+                              className={
+                                product.is_active
+                                  ? "bg-green-50 text-green-700 border-0"
+                                  : "bg-muted text-muted-foreground"
+                              }
+                            >
+                              {product.is_active
+                                ? t("common.active", "مفعل")
+                                : t("common.inactive", "غير مفعل")}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3.5 text-end">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => navigate(`/products/${product.id}`)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => setDeleteId(product.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                ))
               )}
             </tbody>
           </table>
