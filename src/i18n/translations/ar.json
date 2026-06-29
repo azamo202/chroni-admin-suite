@@ -128,7 +128,13 @@
     "nameArRequired": "الاسم باللغة العربية مطلوب",
     "arabic": "عربي",
     "english": "إنجليزي",
-    "kurdish": "كردي"
+    "kurdish": "كردي",
+    "duplicateProduct": "نسخ المنتج",
+    "duplicateConfirmTitle": "نسخ المنتج",
+    "duplicateConfirmDesc": "هل أنت متأكد من إنشاء نسخة من هذا المنتج؟ سيتم إنشاء منتج جديد بنفس البيانات.",
+    "duplicateBtn": "نسخ",
+    "productDuplicated": "تم نسخ المنتج بنجاح، جاري الانتقال للتعديل...",
+    "duplicateFailed": "فشل نسخ المنتج. يرجى المحاولة مرة أخرى."
   },
   "categories": {
     "title": "إدارة الأقسام",

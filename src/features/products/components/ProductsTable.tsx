@@ -1,5 +1,5 @@
 import React from "react";
-import { Eye, Pencil, Trash2, MoreHorizontal, Image as ImageIcon } from "lucide-react";
+import { Eye, Pencil, Trash2, Copy, MoreHorizontal, Image as ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ interface ProductsTableProps {
   categories: any[];
   onView: (id: string) => void;
   onEdit: (product: any) => void;
+  onDuplicate: (product: any) => void;
   onDelete: (id: string) => void;
 }
 
@@ -32,6 +33,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
   categories,
   onView,
   onEdit,
+  onDuplicate,
   onDelete,
 }) => {
   const { t, i18n } = useTranslation();
@@ -165,6 +167,10 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                         <DropdownMenuItem onClick={() => onEdit(p)}>
                           <Pencil className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />
                           {t("common.edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDuplicate(p)}>
+                          <Copy className="h-3.5 w-3.5 ltr:mr-2 rtl:ml-2" />
+                          {t("products.duplicateProduct", "نسخ المنتج")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

@@ -75,9 +75,11 @@ interface ConfirmDialogProps {
   description: string;
   onConfirm: () => void;
   variant?: 'default' | 'destructive';
+  confirmLabel?: string;
+  loading?: boolean;
 }
 
-export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, variant = 'destructive' }: ConfirmDialogProps) {
+export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, variant = 'destructive', confirmLabel, loading }: ConfirmDialogProps) {
   const { t } = useTranslation();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -96,18 +98,27 @@ export function ConfirmDialog({ open, onOpenChange, title, description, onConfir
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2 pt-2">
-          <AlertDialogCancel className="h-9">{t('common.cancel')}</AlertDialogCancel>
+          <AlertDialogCancel className="h-9" disabled={loading}>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={(e) => { e.preventDefault(); onConfirm(); }}
+            disabled={loading}
             className={variant === 'destructive' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9' : 'h-9'}
           >
-            {t('common.confirm')}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                {t('common.processing', 'جاري التنفيذ...')}
+              </span>
+            ) : (
+              confirmLabel ?? t('common.confirm')
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
+
 
 // ────────────────────────────────────────────
 // Stat Card

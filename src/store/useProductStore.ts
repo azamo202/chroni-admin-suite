@@ -12,6 +12,7 @@ interface ProductState {
   createProduct: (data: FormData) => Promise<{ success: boolean; message?: string }>;
   updateProduct: (id: string | number, data: FormData) => Promise<{ success: boolean; message?: string }>;
   deleteProduct: (id: string | number) => Promise<{ success: boolean; message?: string }>;
+  duplicateProduct: (id: string | number) => Promise<{ success: boolean; newProductId?: number; message?: string }>;
   updateSortOrder: (id: string | number, sortOrder: number) => Promise<{ success: boolean; message?: string }>;
   autoReorderProducts: (categoryId: string | number) => Promise<{ success: boolean; message?: string }>;
 }
@@ -151,6 +152,31 @@ export const useProductStore = create<ProductState>((set, get) => ({
       return { success: false, message: "فشل في حذف المنتج" };
     } catch (err) {
       console.error("Delete Product Error:", err);
+      return { success: false, message: "حدث خطأ في الاتصال بالخادم" };
+    }
+  },
+
+  duplicateProduct: async (id) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const apiUrl = API_BASE_URL;
+
+      const res = await fetch(`${apiUrl}/api/products/${id}/duplicate`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+        },
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.status) {
+        return { success: true, newProductId: json.data?.id };
+      }
+      return { success: false, message: json.message || "فشل في نسخ المنتج" };
+    } catch (err) {
+      console.error("Duplicate Product Error:", err);
       return { success: false, message: "حدث خطأ في الاتصال بالخادم" };
     }
   },

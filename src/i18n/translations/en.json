@@ -129,7 +129,13 @@
     "nameArRequired": "Arabic name is required",
     "arabic": "Arabic",
     "english": "English",
-    "kurdish": "Kurdish"
+    "kurdish": "Kurdish",
+    "duplicateProduct": "Duplicate Product",
+    "duplicateConfirmTitle": "Duplicate Product",
+    "duplicateConfirmDesc": "Are you sure you want to create a duplicate of this product? A new product will be created with the same data.",
+    "duplicateBtn": "Duplicate",
+    "productDuplicated": "Product duplicated successfully. Redirecting to edit...",
+    "duplicateFailed": "Failed to duplicate the product. Please try again."
   },
   "categories": {
     "title": "Categories Management",

@@ -34,6 +34,7 @@ export default function ProductsPage() {
     createProduct,
     updateProduct,
     deleteProduct,
+    duplicateProduct,
   } = useProductStore();
 
   // Filters State
@@ -54,6 +55,8 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duplicateTarget, setDuplicateTarget] = useState<any>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   // Query Fetching
   useQuery({
@@ -151,6 +154,25 @@ export default function ProductsPage() {
     setDeleteId(null);
   };
 
+  const handleDuplicate = async () => {
+    if (!duplicateTarget) return;
+    setIsDuplicating(true);
+
+    const response = await duplicateProduct(duplicateTarget.id);
+
+    setIsDuplicating(false);
+    setDuplicateTarget(null);
+
+    if (response.success && response.newProductId) {
+      toast.success(
+        t("products.productDuplicated", "تم نسخ المنتج بنجاح، جاري الانتقال للتعديل...")
+      );
+      navigate(`/products/${response.newProductId}`);
+    } else {
+      toast.error(response.message || t("products.duplicateFailed", "فشل نسخ المنتج"));
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -195,6 +217,7 @@ export default function ProductsPage() {
         categories={categories}
         onView={(id) => navigate(`/products/${id}`)}
         onEdit={openEdit}
+        onDuplicate={setDuplicateTarget}
         onDelete={setDeleteId}
       />
 
@@ -217,6 +240,20 @@ export default function ProductsPage() {
           "هل أنت متأكد من عملية الحذف؟ لا يمكن التراجع عن هذا الإجراء.",
         )}
         onConfirm={handleDelete}
+      />
+
+      <ConfirmDialog
+        open={!!duplicateTarget}
+        onOpenChange={(v) => !v && !isDuplicating && setDuplicateTarget(null)}
+        title={t("products.duplicateConfirmTitle", "نسخ المنتج")}
+        description={t(
+          "products.duplicateConfirmDesc",
+          "هل أنت متأكد من إنشاء نسخة من هذا المنتج؟",
+        )}
+        onConfirm={handleDuplicate}
+        variant="default"
+        confirmLabel={isDuplicating ? undefined : t("products.duplicateBtn", "نسخ")}
+        loading={isDuplicating}
       />
     </>
   );
